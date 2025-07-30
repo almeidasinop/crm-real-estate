@@ -176,7 +176,7 @@ const CropCard = ({
           <span className="font-medium">{crop.area} ha</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span>Jours avant récolte:</span>
+          <span>Dias para colheita:</span>
           <span className="font-medium">{daysRemaining()}</span>
         </div>
       </div>
@@ -302,7 +302,7 @@ const CropPlanning = () => {
   const handleDeleteCrop = (id: number) => {
     setCropsData(cropsData.filter(crop => crop.id !== id));
     setCropTasks(cropTasks.filter(task => task.cropId !== id));
-    toast.success('Culture supprimée avec succès');
+    toast.success('Cultura removida com sucesso');
   };
 
   const handleSaveCrop = () => {
@@ -310,7 +310,7 @@ const CropPlanning = () => {
       setCropsData(cropsData.map(crop => 
         crop.id === editingCrop.id ? editingCrop : crop
       ));
-      toast.success('Culture mise à jour avec succès');
+      toast.success('Cultura atualizada com sucesso');
     } else if (newCrop.name && newCrop.parcel) {
       const newId = Math.max(0, ...cropsData.map(c => c.id)) + 1;
       setCropsData([...cropsData, { 
@@ -325,7 +325,7 @@ const CropPlanning = () => {
       } as CropData]);
       toast.success('Nouvelle culture ajoutée');
     } else {
-      toast.error('Veuillez remplir tous les champs obligatoires');
+      toast.error('Por favor preencha todos os campos obrigatórios');
       return;
     }
     setShowCropForm(false);
@@ -333,7 +333,7 @@ const CropPlanning = () => {
 
   const handleSaveTask = () => {
     if (!newTask.title || !newTask.cropId) {
-      toast.error('Veuillez remplir tous les champs obligatoires');
+      toast.error('Por favor preencha todos os campos obrigatórios');
       return;
     }
 
@@ -639,7 +639,7 @@ const CropPlanning = () => {
                   value={newTask.cropId || ''}
                   onChange={(e) => setNewTask({...newTask, cropId: Number(e.target.value)})}
                 >
-                  <option value="">Sélectionner une culture</option>
+                  <option value="">Selecionar uma cultura</option>
                   {cropsData.map(crop => (
                     <option key={crop.id} value={crop.id}>
                       {crop.name} - {crop.parcel}

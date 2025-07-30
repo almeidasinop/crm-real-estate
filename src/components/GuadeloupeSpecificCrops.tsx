@@ -117,7 +117,7 @@ const GuadeloupeSpecificCrops = () => {
             <DropdownMenuContent align="end" className="bg-white border shadow-lg">
               <DropdownMenuItem onClick={handleImportClick} className="cursor-pointer">
                 <FileUp className="mr-2 h-4 w-4" />
-                Sélectionner un fichier
+                Selecionar um arquivo
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

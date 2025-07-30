@@ -119,7 +119,7 @@ const ParcelFilters = ({
                   format(dateRange.from, 'dd/MM/yyyy')
                 )
               ) : (
-                "Sélectionner des dates"
+                "Selecionar datas"
               )}
             </Button>
           </PopoverTrigger>

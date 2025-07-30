@@ -128,7 +128,7 @@ const TaskList = () => {
                 onChange={(e) => setNewTask({...newTask, culture: e.target.value})}
                 className="w-full p-2 border rounded focus:ring-2 focus:ring-agri-primary focus:border-agri-primary"
               >
-                <option value="">Sélectionner une culture</option>
+                <option value="">Selecionar uma cultura</option>
                 <option value="Canne à Sucre">Canne à Sucre</option>
                 <option value="Banane">Banane</option>
                 <option value="Ananas">Ananas</option>

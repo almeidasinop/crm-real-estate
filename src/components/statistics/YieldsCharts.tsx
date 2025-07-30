@@ -102,10 +102,10 @@ const YieldsCharts = () => {
                   <YAxis />
                   <Tooltip 
                     formatter={(value, name, props) => {
-                      if (name === 'différence') {
-                        return [`${Number(value) > 0 ? '+' : ''}${value} ${props.payload.unité}`, 'Évolution'];
+                      if (name === 'diferenca') {
+                        return [`${Number(value) > 0 ? '+' : ''}${value} ${props.payload.unidade}`, 'Evolução'];
                       }
-                      return [`${value} ${props.payload.unité}`, name];
+                      return [`${value} ${props.payload.unidade}`, name];
                     }}
                   />
                   <Legend />
@@ -122,10 +122,10 @@ const YieldsCharts = () => {
                   <YAxis />
                   <Tooltip 
                     formatter={(value, name, props) => {
-                      if (name === 'différence') {
-                        return [`${Number(value) > 0 ? '+' : ''}${value} ${props.payload.unité}`, 'Évolution'];
+                      if (name === 'diferenca') {
+                        return [`${Number(value) > 0 ? '+' : ''}${value} ${props.payload.unidade}`, 'Evolução'];
                       }
-                      return [`${value} ${props.payload.unité}`, name];
+                      return [`${value} ${props.payload.unidade}`, name];
                     }}
                   />
                   <Legend />

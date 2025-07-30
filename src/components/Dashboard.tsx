@@ -214,7 +214,7 @@ const Dashboard = () => {
   const handleAddWeatherAlert = () => {
     // Validation
     if (!newAlert.region || !newAlert.startDate || !newAlert.endDate || !newAlert.description) {
-      toast.error('Veuillez remplir tous les champs obligatoires');
+      toast.error('Por favor preencha todos os campos obrigatórios');
       return;
     }
     

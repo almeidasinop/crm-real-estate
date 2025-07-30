@@ -174,7 +174,7 @@ const ParcelCard = ({
         <div className="col-span-2 mt-1 py-1 px-2 bg-agri-primary/5 rounded-md text-center">
           <span className="text-agri-primary font-medium">{parcel.crop}</span>
           {parcel.harvestDate && (
-            <p className="text-xs mt-1">Récolte dans: {calculateDays(parcel.harvestDate)} jours</p>
+            <p className="text-xs mt-1">Colheita em: {calculateDays(parcel.harvestDate)} dias</p>
           )}
         </div>
       </div>
@@ -246,7 +246,7 @@ const GuadeloupeParcelManagement = () => {
     setEditedParcel(newParcel);
     setSelectedParcel(newParcel);
     setIsEditMode(true);
-    toast.success('Nouvelle parcelle créée');
+    toast.success('Nova propriedade criada');
   };
 
   const handleSaveEdit = () => {
@@ -255,7 +255,7 @@ const GuadeloupeParcelManagement = () => {
     setParcels(parcels.map(p => p.id === editedParcel.id ? editedParcel : p));
     setSelectedParcel(editedParcel);
     setIsEditMode(false);
-    toast.success('Modifications enregistrées');
+    toast.success('Modificações salvas');
   };
 
   const handleCancelEdit = () => {
@@ -298,7 +298,7 @@ const GuadeloupeParcelManagement = () => {
           onClick={handleAddParcel}
         >
           <Plus className="h-4 w-4 mr-2" />
-          Ajouter une parcelle
+          Adicionar propriedade
         </button>
       </header>
 
@@ -310,7 +310,7 @@ const GuadeloupeParcelManagement = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input 
                 type="text" 
-                placeholder="Rechercher..." 
+                placeholder="Pesquisar..." 
                 className="pl-10 pr-4 py-2 w-full border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -322,7 +322,7 @@ const GuadeloupeParcelManagement = () => {
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
               >
-                <option value="all">Tous</option>
+                <option value="all">Todos</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
                 <option value="planned">Planifiée</option>
@@ -344,7 +344,7 @@ const GuadeloupeParcelManagement = () => {
             ) : (
               <div className="text-center py-8 px-4 border border-dashed rounded-lg">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-muted-foreground">Aucune parcelle trouvée avec ces critères</p>
+                <p className="text-muted-foreground">Nenhuma parcela encontrada com estes critérios</p>
               </div>
             )}
           </div>
@@ -552,9 +552,9 @@ const GuadeloupeParcelManagement = () => {
           ) : (
             <div className="border rounded-xl bg-muted h-full flex flex-col items-center justify-center p-6">
               <MapPin className="h-12 w-12 text-muted-foreground opacity-50 mb-4" />
-              <h3 className="text-xl font-medium text-foreground mb-2">Sélectionnez une parcelle</h3>
+              <h3 className="text-xl font-medium text-foreground mb-2">Selecione uma propriedade</h3>
               <p className="text-muted-foreground text-center max-w-md">
-                Cliquez sur une parcelle dans la liste à gauche pour afficher ses détails et accéder à la carte
+                Clique em uma propriedade na lista à esquerda para exibir seus detalhes e acessar o mapa
               </p>
             </div>
           )}

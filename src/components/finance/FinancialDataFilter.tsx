@@ -80,7 +80,7 @@ const FinancialDataFilter: React.FC<FinancialDataFilterProps> = ({
               className="text-xs text-muted-foreground hover:text-foreground h-7 md:h-8"
             >
               <X className="h-3 w-3 mr-1" />
-              {!isMobile && "Effacer"}
+              {!isMobile && "Limpar"}
             </Button>
           )}
         </div>

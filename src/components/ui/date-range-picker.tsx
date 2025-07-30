@@ -28,11 +28,11 @@ export function DatePickerWithRange({
   setDate,
   className,
   align = "start",
-  placeholderText = "Sélectionner des dates",
+  placeholderText = "Selecionar datas",
   presets = [
-    { label: "7 jours", days: 7 },
-    { label: "30 jours", days: 30 },
-    { label: "90 jours", days: 90 }
+    { label: "7 dias", days: 7 },
+    { label: "30 dias", days: 30 },
+    { label: "90 dias", days: 90 }
   ]
 }: DatePickerWithRangeProps) {
   return (
@@ -79,7 +79,7 @@ export function DatePickerWithRange({
               onClick={() => setDate(undefined)}
               className="text-xs"
             >
-              Effacer
+              Limpar
             </Button>
             {presets.map((preset, i) => (
               <Button 

@@ -352,7 +352,7 @@ const GuadeloupeParcelDetail = () => {
                 <div className="mb-4 p-3 border border-dashed rounded-lg">
                   <div className="flex flex-col items-center justify-center">
                     <Camera className="h-8 w-8 text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-2">Glissez une image ou cliquez pour parcourir</p>
+                    <p className="text-sm text-muted-foreground mb-2">Arraste uma imagem ou clique para navegar</p>
                     <Input type="file" className="max-w-xs" />
                     <div className="flex space-x-2 mt-2">
                       <button className="px-3 py-1 text-sm bg-agri-primary text-white rounded">Télécharger</button>
@@ -406,7 +406,7 @@ const GuadeloupeParcelDetail = () => {
                 variant="outline"
                 className="text-sm"
               >
-                Voir toutes les tâches
+                Ver todas as tarefas
               </Button>
             </div>
             

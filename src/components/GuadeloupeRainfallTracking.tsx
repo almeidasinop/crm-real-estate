@@ -483,7 +483,7 @@ const GuadeloupeRainfallTracking = () => {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner un mois" />
+                                  <SelectValue placeholder="Selecionar um mês" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -537,7 +537,7 @@ const GuadeloupeRainfallTracking = () => {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner une région" />
+                                  <SelectValue placeholder="Selecionar uma região" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>

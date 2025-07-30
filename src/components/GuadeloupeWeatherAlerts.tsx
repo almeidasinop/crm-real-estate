@@ -367,7 +367,7 @@ const GuadeloupeWeatherAlerts = () => {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner un type" />
+                                  <SelectValue placeholder="Selecionar um tipo" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -394,7 +394,7 @@ const GuadeloupeWeatherAlerts = () => {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner une région" />
+                                  <SelectValue placeholder="Selecionar uma região" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -419,7 +419,7 @@ const GuadeloupeWeatherAlerts = () => {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner une sévérité" />
+                                  <SelectValue placeholder="Selecionar uma severidade" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -445,7 +445,7 @@ const GuadeloupeWeatherAlerts = () => {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner un impact" />
+                                  <SelectValue placeholder="Selecionar um impacto" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -468,7 +468,7 @@ const GuadeloupeWeatherAlerts = () => {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner un statut" />
+                                  <SelectValue placeholder="Selecionar um status" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>

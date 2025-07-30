@@ -95,7 +95,7 @@ const NotificationCenter: React.FC = () => {
             )}
             <Button variant="ghost" size="sm" onClick={handleClearAll}>
               <Trash2 className="h-4 w-4 mr-1" />
-              Effacer tout
+              Limpar tudo
             </Button>
           </div>
         </div>
