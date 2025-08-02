@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import PageLayout from '../components/layout/PageLayout';
+import PageLayout from '@/components/layout/PageLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,9 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatCurrency, formatArea } from '@/utils/formatters';
+import PropertyDialog from '@/components/dialogs/PropertyDialog';
+import { useProperties } from '@/hooks/use-properties';
+import { toast } from 'sonner';
 
 interface Propriedade {
   id: string;
@@ -48,85 +51,11 @@ const PropriedadesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterType, setFilterType] = useState('all');
+  const [isPropertyDialogOpen, setIsPropertyDialogOpen] = useState(false);
+  const [editingProperty, setEditingProperty] = useState<any>(null);
   
-  const [propriedades] = useState<Propriedade[]>([
-    {
-      id: '1',
-      titulo: 'Apartamento 3 quartos com vista para o mar',
-      tipo: 'apartamento',
-      status: 'disponivel',
-      preco: 850000,
-      area: 120,
-      quartos: 3,
-      banheiros: 2,
-      vagas: 2,
-      endereco: 'Av. Atlântica, 1500',
-      bairro: 'Copacabana',
-      cidade: 'Rio de Janeiro',
-      estado: 'RJ',
-      agente: 'Ana Silva',
-      dataInsercao: '2024-01-15',
-      destaque: true,
-      descricao: 'Apartamento moderno com vista deslumbrante para o mar de Copacabana.'
-    },
-    {
-      id: '2',
-      titulo: 'Casa 4 quartos em condomínio fechado',
-      tipo: 'casa',
-      status: 'disponivel',
-      preco: 1200000,
-      area: 250,
-      quartos: 4,
-      banheiros: 3,
-      vagas: 3,
-      endereco: 'Rua das Palmeiras, 45',
-      bairro: 'Barra da Tijuca',
-      cidade: 'Rio de Janeiro',
-      estado: 'RJ',
-      agente: 'Carlos Santos',
-      dataInsercao: '2024-01-20',
-      destaque: false,
-      descricao: 'Casa espaçosa em condomínio fechado com área de lazer completa.'
-    },
-    {
-      id: '3',
-      titulo: 'Cobertura duplex de luxo',
-      tipo: 'cobertura',
-      status: 'vendido',
-      preco: 2100000,
-      area: 300,
-      quartos: 5,
-      banheiros: 4,
-      vagas: 4,
-      endereco: 'Rua Visconde de Pirajá, 100',
-      bairro: 'Ipanema',
-      cidade: 'Rio de Janeiro',
-      estado: 'RJ',
-      agente: 'Maria Costa',
-      dataInsercao: '2023-12-10',
-      destaque: true,
-      descricao: 'Cobertura duplex com terraço e piscina privativa em Ipanema.'
-    },
-    {
-      id: '4',
-      titulo: 'Sala comercial moderna',
-      tipo: 'comercial',
-      status: 'alugado',
-      preco: 8500,
-      area: 80,
-      quartos: 0,
-      banheiros: 2,
-      vagas: 2,
-      endereco: 'Av. Rio Branco, 200',
-      bairro: 'Centro',
-      cidade: 'Rio de Janeiro',
-      estado: 'RJ',
-      agente: 'João Oliveira',
-      dataInsercao: '2024-01-05',
-      destaque: false,
-      descricao: 'Sala comercial moderna no centro financeiro da cidade.'
-    }
-  ]);
+  // Usar o hook do Firebase para buscar propriedades
+  const { data: properties, isLoading, error, refetch } = useProperties();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -160,6 +89,27 @@ const PropriedadesPage = () => {
     }
   };
 
+  // Converter dados do Firebase para o formato esperado
+  const propriedades = properties?.filter(property => property && property.id).map(property => ({
+    id: property.id,
+    titulo: property.title || 'Sem título',
+    tipo: property.type || 'apartamento',
+    status: property.status || 'disponivel',
+    preco: property.price || 0,
+    area: property.area || 0,
+    quartos: property.bedrooms || 0,
+    banheiros: property.bathrooms || 0,
+    vagas: property.parkingSpaces || 0,
+    endereco: property.address ? `${property.address.street || ''}, ${property.address.number || ''}` : 'Endereço não informado',
+    bairro: property.address?.neighborhood || 'Bairro não informado',
+    cidade: property.address?.city || 'Cidade não informada',
+    estado: property.address?.state || 'Estado não informado',
+    agente: property.agentId || 'Não atribuído',
+    dataInsercao: property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'N/A',
+    destaque: property.tags?.includes('destaque') || false,
+    descricao: property.description || 'Sem descrição'
+  })) || [];
+
   const filteredPropriedades = propriedades.filter(propriedade => {
     const matchesSearch = propriedade.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          propriedade.bairro.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -174,6 +124,24 @@ const PropriedadesPage = () => {
   const propriedadesDisponiveis = propriedades.filter(p => p.status === 'disponivel').length;
   const propriedadesVendidas = propriedades.filter(p => p.status === 'vendido').length;
   const valorTotal = propriedades.filter(p => p.status === 'vendido').reduce((total, p) => total + p.preco, 0);
+
+  // Funções para controlar o popup
+  const handleOpenNewPropertyDialog = () => {
+    setEditingProperty(null);
+    setIsPropertyDialogOpen(true);
+  };
+
+  const handleOpenEditPropertyDialog = (property: any) => {
+    setEditingProperty(property);
+    setIsPropertyDialogOpen(true);
+  };
+
+  const handlePropertyDialogSuccess = () => {
+    setIsPropertyDialogOpen(false);
+    setEditingProperty(null);
+    refetch(); // Recarregar dados do Firebase
+    toast.success('Propriedade salva com sucesso!');
+  };
 
   return (
     <PageLayout>
@@ -190,7 +158,7 @@ const PropriedadesPage = () => {
               <Filter className="mr-2 h-4 w-4" />
               Filtros Avançados
             </Button>
-            <Button>
+            <Button onClick={handleOpenNewPropertyDialog}>
               <Plus className="mr-2 h-4 w-4" />
               Nova Propriedade
             </Button>
@@ -284,106 +252,151 @@ const PropriedadesPage = () => {
           </CardContent>
         </Card>
 
-        {/* Properties Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPropriedades.map((propriedade) => (
-            <motion.div
-              key={propriedade.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <div className="flex gap-2">
-                      <Badge className={getStatusColor(propriedade.status)}>
-                        {propriedade.status}
-                      </Badge>
-                      <Badge className={getTipoColor(propriedade.tipo)}>
-                        {propriedade.tipo}
-                      </Badge>
-                      {propriedade.destaque && (
-                        <Badge variant="secondary">
-                          <Star className="w-3 h-3 mr-1" />
-                          Destaque
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  <CardTitle className="text-lg line-clamp-2">
-                    {propriedade.titulo}
-                  </CardTitle>
-                  <CardDescription className="text-primary text-xl font-bold">
-                    {formatCurrency(propriedade.preco)}
-                    {propriedade.status === 'alugado' && '/mês'}
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="mr-2 h-4 w-4" />
-                      {propriedade.bairro}, {propriedade.cidade} - {propriedade.estado}
-                    </div>
-                    
-                    <div className="grid grid-cols-4 gap-2 text-sm">
-                      <div className="flex items-center">
-                        <Ruler className="mr-1 h-4 w-4 text-muted-foreground" />
-                        {formatArea(propriedade.area)}
-                      </div>
-                      {propriedade.quartos > 0 && (
-                        <div className="flex items-center">
-                          <Bed className="mr-1 h-4 w-4 text-muted-foreground" />
-                          {propriedade.quartos}
-                        </div>
-                      )}
-                      <div className="flex items-center">
-                        <Bath className="mr-1 h-4 w-4 text-muted-foreground" />
-                        {propriedade.banheiros}
-                      </div>
-                      <div className="flex items-center">
-                        <Car className="mr-1 h-4 w-4 text-muted-foreground" />
-                        {propriedade.vagas}
-                      </div>
-                    </div>
-                    
-                    <div className="text-sm text-muted-foreground">
-                      <p>Corretor: {propriedade.agente}</p>
-                    </div>
-                    
-                    <div className="flex gap-2 pt-2">
-                      <Button size="sm" variant="outline" className="flex-1">
-                        <Eye className="mr-2 h-4 w-4" />
-                        Ver
-                      </Button>
-                      <Button size="sm" variant="outline" className="flex-1">
-                        <Edit className="mr-2 h-4 w-4" />
-                        Editar
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+        {/* Loading State */}
+        {isLoading && (
+          <Card>
+            <CardContent className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Carregando propriedades...</p>
+            </CardContent>
+          </Card>
+        )}
 
-        {filteredPropriedades.length === 0 && (
+        {/* Error State */}
+        {error && (
+          <Card>
+            <CardContent className="text-center py-12">
+              <div className="text-red-500 mb-4">
+                <Home className="mx-auto h-12 w-12 mb-2" />
+                <h3 className="text-lg font-semibold">Erro ao carregar propriedades</h3>
+                <p className="text-sm text-muted-foreground">{error.message}</p>
+              </div>
+              <Button onClick={() => refetch()}>
+                Tentar Novamente
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Properties Grid */}
+        {!isLoading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPropriedades.map((propriedade) => (
+              <motion.div
+                key={propriedade.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex gap-2">
+                        <Badge className={getStatusColor(propriedade.status)}>
+                          {propriedade.status}
+                        </Badge>
+                        <Badge className={getTipoColor(propriedade.tipo)}>
+                          {propriedade.tipo}
+                        </Badge>
+                        {propriedade.destaque && (
+                          <Badge variant="secondary">
+                            <Star className="w-3 h-3 mr-1" />
+                            Destaque
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <CardTitle className="text-lg line-clamp-2">
+                      {propriedade.titulo}
+                    </CardTitle>
+                    <CardDescription className="text-primary text-xl font-bold">
+                      {formatCurrency(propriedade.preco)}
+                      {propriedade.status === 'alugado' && '/mês'}
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <MapPin className="mr-2 h-4 w-4" />
+                        {propriedade.bairro}, {propriedade.cidade} - {propriedade.estado}
+                      </div>
+                      
+                      <div className="grid grid-cols-4 gap-2 text-sm">
+                        <div className="flex items-center">
+                          <Ruler className="mr-1 h-4 w-4 text-muted-foreground" />
+                          {formatArea(propriedade.area)}
+                        </div>
+                        {propriedade.quartos > 0 && (
+                          <div className="flex items-center">
+                            <Bed className="mr-1 h-4 w-4 text-muted-foreground" />
+                            {propriedade.quartos}
+                          </div>
+                        )}
+                        <div className="flex items-center">
+                          <Bath className="mr-1 h-4 w-4 text-muted-foreground" />
+                          {propriedade.banheiros}
+                        </div>
+                        <div className="flex items-center">
+                          <Car className="mr-1 h-4 w-4 text-muted-foreground" />
+                          {propriedade.vagas}
+                        </div>
+                      </div>
+                      
+                      <div className="text-sm text-muted-foreground">
+                        <p>Corretor: {propriedade.agente}</p>
+                      </div>
+                      
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" variant="outline" className="flex-1">
+                          <Eye className="mr-2 h-4 w-4" />
+                          Ver
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="flex-1"
+                          onClick={() => handleOpenEditPropertyDialog(propriedade)}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Editar
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {!isLoading && !error && filteredPropriedades.length === 0 && (
           <Card>
             <CardContent className="text-center py-12">
               <Home className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">Nenhuma propriedade encontrada</h3>
               <p className="text-muted-foreground mb-4">
-                Não há propriedades que correspondam aos filtros selecionados.
+                {propriedades.length === 0 
+                  ? 'Você ainda não tem propriedades cadastradas.'
+                  : 'Não há propriedades que correspondam aos filtros selecionados.'
+                }
               </p>
-              <Button>
+              <Button onClick={handleOpenNewPropertyDialog}>
                 <Plus className="mr-2 h-4 w-4" />
-                Adicionar Primeira Propriedade
+                {propriedades.length === 0 ? 'Adicionar Primeira Propriedade' : 'Adicionar Nova Propriedade'}
               </Button>
             </CardContent>
           </Card>
         )}
       </div>
+
+      {/* Dialog para Nova/Editar Propriedade */}
+      <PropertyDialog
+        open={isPropertyDialogOpen}
+        onOpenChange={setIsPropertyDialogOpen}
+        initialData={editingProperty}
+        isEditing={!!editingProperty}
+        onSuccess={handlePropertyDialogSuccess}
+      />
     </PageLayout>
   );
 };

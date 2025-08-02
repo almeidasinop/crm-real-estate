@@ -21,6 +21,7 @@ import { AppSettingsProvider } from "./contexts/AppSettingsContext";
 import { trackPageView } from "./utils/analytics";
 
 import PropertyDisplayPage from "./pages/PropertyDisplayPage";
+import FirebaseTestPage from "./pages/FirebaseTestPage";
 
 // Define routes configuration with redirects
 const routes = [
@@ -38,6 +39,7 @@ const routes = [
   { path: "/estatisticas", element: <StatisticsProvider><StatsPage /></StatisticsProvider> },
   { path: "/relatorios", element: <Navigate to="/estatisticas" replace /> },
   { path: "/configuracoes", element: <Navigate to="/dashboard" replace /> },
+  { path: "/teste-firebase", element: <FirebaseTestPage /> },
   // Redirects antigos para compatibilidade com URLs francesas
   { path: "/finances", element: <Navigate to="/financeiro" replace /> },
   { path: "/statistiques", element: <Navigate to="/estatisticas" replace /> },

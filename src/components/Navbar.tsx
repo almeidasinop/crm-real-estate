@@ -62,6 +62,7 @@ const Navbar = () => {
     { title: 'Contratos', path: '/contratos', icon: FileText },
     { title: 'Financeiro', path: '/financeiro', icon: Wallet },
     { title: 'Relatórios', path: '/estatisticas', icon: BarChart2 },
+    { title: 'Teste Firebase', path: '/teste-firebase', icon: Settings },
   ];
 
   const isActive = (path: string) => {
