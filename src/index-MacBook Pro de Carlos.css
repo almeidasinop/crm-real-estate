@@ -1,0 +1,271 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 33% 99%;
+    --foreground: 215 25% 27%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 27%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 27%;
+    --primary: 217 88% 62%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 266 85% 58%;
+    --secondary-foreground: 0 0% 100%;
+    --button-primary: 217 88% 62%;
+    --button-primary-foreground: 0 0% 100%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 16% 56.9%;
+    --accent: 32 90% 65%;
+    --accent-foreground: 215 25% 27%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217 91% 60%;
+    --radius: 0.75rem;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 25% 27%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 215 25% 27%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
+  .dark {
+    --background: 210 20% 10%;
+    --foreground: 0 0% 98%;
+    --card: 214 19% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 214 19% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 213 93% 68%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 266 85% 58%;
+    --secondary-foreground: 0 0% 100%;
+    --button-primary: 213 85% 60%;
+    --button-primary-foreground: 0 0% 100%;
+    --muted: 215 25% 18%;
+    --muted-foreground: 217.2 32.6% 65%;
+    --accent: 32 90% 65%;
+    --accent-foreground: 215 25% 27%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 215 25% 18%;
+    --input: 215 25% 18%;
+    --ring: 213 93% 68%;
+    --sidebar-background: 210 25% 12%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 213 93% 68%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 25% 18%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 215 25% 18%;
+    --sidebar-ring: 213 93% 68%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-medium tracking-tight;
+  }
+
+  h1 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  h2 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  h3 {
+    @apply text-xl md:text-2xl;
+  }
+}
+
+@layer components {
+  /* Componentes Glass UI */
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-glass;
+  }
+  
+  .glass-hover {
+    @apply hover:shadow-glass-hover transition-shadow duration-300;
+  }
+  
+  .card-hover {
+    @apply hover:shadow-card-hover transition-all duration-300 ease-in-out transform hover:-translate-y-1;
+  }
+  
+  /* Cards do Dashboard */
+  .dashboard-card {
+    @apply bg-white rounded-xl shadow-card p-5 border border-border/50;
+  }
+  
+  /* Cards de estatísticas */
+  .stat-card {
+    @apply dashboard-card flex flex-col justify-between;
+  }
+  
+  .stat-value {
+    @apply text-2xl font-semibold text-foreground;
+  }
+  
+  .stat-label {
+    @apply text-sm font-medium text-muted-foreground;
+  }
+  
+  /* Transições suaves */
+  .page-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  /* Elementos interativos */
+  .interactive {
+    @apply transition-all duration-200 hover:brightness-105 active:brightness-95;
+  }
+  
+  /* Links de navegação */
+  .nav-link {
+    @apply relative px-3 py-2 text-foreground/80 rounded-md transition-colors hover:text-foreground hover:bg-muted;
+  }
+  
+  .nav-link.active {
+    @apply text-primary font-medium bg-primary/10;
+  }
+  
+  /* Zona de arrastar e soltar */
+  .drop-zone {
+    @apply border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer transition-colors hover:border-primary/50 hover:bg-primary/5;
+  }
+  
+  /* Inputs de formulário com estilo consistente */
+  .form-input {
+    @apply rounded-md border border-input px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  }
+}
+
+@layer utilities {
+  /* Scrollbar personalizada */
+  .custom-scrollbar {
+    @apply scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/30;
+  }
+  
+  /* Gradientes de texto */
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent;
+  }
+  
+  /* Utilitário para centralização perfeita */
+  .center {
+    @apply flex items-center justify-center;
+  }
+  
+  /* Badge em formato de pílula */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+  
+  .badge-primary {
+    @apply badge bg-primary/10 text-primary;
+  }
+  
+  .badge-secondary {
+    @apply badge bg-secondary/10 text-secondary;
+  }
+  
+  .badge-accent {
+    @apply badge bg-accent/10 text-accent-foreground;
+  }
+  
+  .badge-success {
+    @apply badge bg-green-500/10 text-green-600;
+  }
+  
+  .badge-warning {
+    @apply badge bg-yellow-500/10 text-yellow-600;
+  }
+  
+  .badge-danger {
+    @apply badge bg-red-500/10 text-red-600;
+  }
+
+  /*
+   * Aplica o fundo da área de scroll principal diretamente quando
+   * a classe .dark está ativa no elemento pai.
+  */
+  .dark #root .overflow-hidden > .overflow-y-auto {
+    background-color: #121a2c;
+  }
+
+  /* Novas regras para o modo escuro */
+  .dark .h-screen .mb-8 > .overflow-hidden {
+    background-color: #14191F;
+  }
+
+  .dark .w-full tbody .px-4 {
+    background-color: #222c39;
+  }
+
+  .dark .mb-8 .p-4 .border-t {
+    background-color: #222c39;
+  }
+
+  .dark .uppercase tr .text-left {
+    background-color: #222838;
+  }
+
+  .dark .mx-auto .grid .text-card-foreground {
+    background-color: #14191F;
+  }
+  .dark .mx-auto .grid select{
+    background-color:#70a7f6;
+  }
+  .dark .bg-white {
+    background-color: #14191F;
+  }
+  .dark .px-3.py-1.border.rounded-md.inspecta-element-1{
+    background-color:#70a7f6;
+  }
+}
+
+/* Adicionando transição suave a todos os elementos */
+* {
+  @apply transition-colors duration-200;
+}
+
+/* Ajustes responsivos */
+.container {
+  @apply px-4 md:px-6 lg:px-8;
+}
+
+/* Classes de animação */
+.animate-enter {
+  @apply animate-fade-in;
+}
+
+.animate-scale {
+  @apply animate-scale-in;
+}
+
+.hover-lift {
+  @apply transition-transform duration-300 ease-out hover:-translate-y-1;
+}
+
+.pt-6 .flex select{
+  background-color: 211 89% 70%;
+}
