@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // 1. Importar useNavigate
 import PageLayout from '@/components/layout/PageLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,8 +26,21 @@ import { motion } from 'framer-motion';
 import { formatCurrency, formatArea } from '@/utils/formatters';
 import PropertyDialog from '@/components/dialogs/PropertyDialog';
 import { useProperties } from '@/hooks/use-properties';
+import { useAgent } from '@/hooks/use-agents';
 import { toast } from 'sonner';
+import { Property } from '@/types/crm';
 
+// Componente para exibir o nome do corretor a partir do ID
+const AgentName = ({ agentId }: { agentId: string }) => {
+  const { data: agent, isLoading } = useAgent(agentId);
+  
+  if (isLoading) return <p>Corretor: Carregando...</p>;
+  if (!agent) return <p>Corretor: Não atribuído</p>;
+  
+  return <p>Corretor: {agent.name}</p>;
+};
+
+// Interface para o formato local de propriedade usado na UI
 interface Propriedade {
   id: string;
   titulo: string;
@@ -48,11 +62,12 @@ interface Propriedade {
 }
 
 const PropriedadesPage = () => {
+  const navigate = useNavigate(); // 2. Inicializar o hook
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterType, setFilterType] = useState('all');
   const [isPropertyDialogOpen, setIsPropertyDialogOpen] = useState(false);
-  const [editingProperty, setEditingProperty] = useState<any>(null);
+  const [editingProperty, setEditingProperty] = useState<Propriedade | null>(null);
   
   // Usar o hook do Firebase para buscar propriedades
   const { data: properties, isLoading, error, refetch } = useProperties();
@@ -131,7 +146,7 @@ const PropriedadesPage = () => {
     setIsPropertyDialogOpen(true);
   };
 
-  const handleOpenEditPropertyDialog = (property: any) => {
+  const handleOpenEditPropertyDialog = (property: Propriedade) => {
     setEditingProperty(property);
     setIsPropertyDialogOpen(true);
   };
@@ -141,6 +156,11 @@ const PropriedadesPage = () => {
     setEditingProperty(null);
     refetch(); // Recarregar dados do Firebase
     toast.success('Propriedade salva com sucesso!');
+  };
+
+  // 3. Criar a função de navegação
+  const handleViewProperty = (id: string) => {
+    navigate(`/propriedades/${id}`);
   };
 
   return (
@@ -343,11 +363,16 @@ const PropriedadesPage = () => {
                       </div>
                       
                       <div className="text-sm text-muted-foreground">
-                        <p>Corretor: {propriedade.agente}</p>
+                        <AgentName agentId={propriedade.agente} />
                       </div>
                       
                       <div className="flex gap-2 pt-2">
-                        <Button size="sm" variant="outline" className="flex-1">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="flex-1"
+                          onClick={() => handleViewProperty(propriedade.id)} // 4. Adicionar o onClick
+                        >
                           <Eye className="mr-2 h-4 w-4" />
                           Ver
                         </Button>

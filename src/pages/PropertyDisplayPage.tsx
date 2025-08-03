@@ -12,6 +12,8 @@ import PropertyFooter from "@/components/property-display/PropertyFooter";
 import PropertyHeader from "@/components/property-display/PropertyHeader";
 import PropertyInfo from "@/components/property-display/PropertyInfo";
 import SidePropertyList from "@/components/property-display/SidePropertyList";
+import { useParams } from 'react-router-dom';
+import { useProperty, useProperties } from '@/hooks/use-properties';
 
 // Mock data for a single property
 const mockProperty = {
@@ -52,7 +54,29 @@ const relatedProperties = [
   { id: 5, title: "Cobertura com Piscina Privativa", price: "R$ 4.000.000" },
 ];
 
+// Remova os dados mocados (mockProperty, mockBroker, recentProperties, relatedProperties)
+
 const PropertyDisplayPage = () => {
+  const { id } = useParams<{ id: string }>();
+
+  // Busca a propriedade principal pelo ID
+  const { data: property, isLoading, isError } = useProperty(id || '');
+
+  // Busca propriedades recentes e relacionadas (exemplo)
+  const { data: recentProperties } = useProperties(5); // 5 mais recentes
+  const { data: relatedProperties } = useProperties(5); // Lógica de relacionamento pode ser mais complexa
+
+  if (isLoading) {
+    return <div>Carregando...</div>;
+  }
+
+  if (isError || !property) {
+    return <div>Erro ao carregar a propriedade ou propriedade não encontrada.</div>;
+  }
+
+  // Dados do corretor podem vir da propriedade ou de outra busca
+  const broker = property.broker; // Supondo que a propriedade tenha os dados do corretor
+
   return (
     <div className="bg-gray-50">
       <PropertyHeader />
@@ -60,21 +84,21 @@ const PropertyDisplayPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            <ImageGallery imageUrls={mockProperty.imageUrls} />
-            <PropertyInfo property={mockProperty} />
-            <PropertyDetailsTable details={mockProperty.details} />
-            <AmenitiesList amenities={mockProperty.amenities} />
+            <ImageGallery imageUrls={property.imageUrls} />
+            <PropertyInfo property={property} />
+            <PropertyDetailsTable details={property.details} />
+            <AmenitiesList amenities={property.amenities} />
             <ContactForm />
           </div>
 
           {/* Sidebar */}
           <aside className="space-y-8">
-            <BrokerCard broker={mockBroker} />
+            {broker && <BrokerCard broker={broker} />}
             <BookingForm />
             <FinancingCalculator />
             <AdvancedSearch />
-            <SidePropertyList title="Propriedades Recentes" properties={recentProperties} />
-            <SidePropertyList title="Propriedades Relacionadas" properties={relatedProperties} />
+            <SidePropertyList title="Propriedades Recentes" properties={recentProperties || []} />
+            <SidePropertyList title="Propriedades Relacionadas" properties={relatedProperties || []} />
           </aside>
         </div>
       </main>

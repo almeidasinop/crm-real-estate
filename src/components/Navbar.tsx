@@ -53,7 +53,7 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { title: 'Painel Inicial', path: '/', icon: Home },
+    { title: 'Painel Inicial', path: '/dashboard', icon: Home },
     { title: 'Propriedades', path: '/propriedades', icon: MapPin },
     { title: 'Leads e Clientes', path: '/clientes', icon: Users },
     { title: 'Corretores', path: '/agentes', icon: Package },
@@ -63,6 +63,7 @@ const Navbar = () => {
     { title: 'Financeiro', path: '/financeiro', icon: Wallet },
     { title: 'Relatórios', path: '/estatisticas', icon: BarChart2 },
     { title: 'Teste Firebase', path: '/teste-firebase', icon: Settings },
+    { title: 'Home', path: '/', icon: Home },
   ];
 
   const isActive = (path: string) => {

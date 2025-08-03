@@ -11,7 +11,7 @@ import PropertyForm from '@/components/forms/PropertyForm';
 interface PropertyDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialData?: any;
+  initialData?: Record<string, any>;
   isEditing?: boolean;
   onSuccess?: () => void;
 }
@@ -60,4 +60,4 @@ const PropertyDialog: React.FC<PropertyDialogProps> = ({
   );
 };
 
-export default PropertyDialog; 
+export default PropertyDialog;
