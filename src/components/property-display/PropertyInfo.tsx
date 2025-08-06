@@ -13,8 +13,30 @@ const parseDescriptionToList = (description: string) => {
   return description.split('\\n').filter(item => item.trim() !== '');
 };
 
+// --- NOVO COMPONENTE PARA O SELO DE FINANCIAMENTO ---
+const FinancingInfo = () => (
+  <div className="mt-6 border-t border-gray-200 pt-6">
+    <div className="flex items-center justify-between">
+      <div>
+        <h3 className="text-xl font-bold text-gray-800">Imóvel Financiável</h3>
+        <p className="text-gray-600 mt-1">
+          Este imóvel está <span className="font-bold text-green-600">apto para financiamento</span> por bancos e instituições parceiras.
+        </p>
+        <p className="text-sm text-gray-500 mt-2">
+          Simule as melhores condições em um só lugar e encontre a taxa ideal para o seu perfil — rápido, seguro e sem burocracia.
+        </p>
+      </div>
+      <img 
+        src="https://firebasestorage.googleapis.com/v0/b/imob-crm.firebasestorage.app/o/cross_sell.svg?alt=media&token=b8157962-827d-44ad-9c0f-378bb14a74a9" 
+        alt="Ícone de Financiamento"
+        className="w-20 h-20 ml-4"
+      />
+    </div>
+  </div>
+);
+
+
 const PropertyInfo = ({ property }: { property: any }) => {
-  // --- Verificação de Segurança ---
   if (!property) {
     return null;
   }
@@ -22,17 +44,9 @@ const PropertyInfo = ({ property }: { property: any }) => {
   const descriptionItems = parseDescriptionToList(property.description);
   const location = [property.address?.city, property.address?.state].filter(Boolean).join(', ');
   
-  // --- Lógica de data atualizada para ser mais robusta ---
   const getDate = (dateValue: any): Date | null => {
-      // Caso 1: O valor já é um objeto Date do JavaScript (confirmado pelo console)
-      if (dateValue instanceof Date) {
-          return dateValue;
-      }
-      // Caso 2: O valor é um Timestamp do Firestore (para garantir compatibilidade)
-      if (dateValue && typeof dateValue.seconds === 'number') {
-          return new Date(dateValue.seconds * 1000);
-      }
-      // Se não for nenhum dos formatos esperados, retorna null
+      if (dateValue instanceof Date) return dateValue;
+      if (dateValue && typeof dateValue.seconds === 'number') return new Date(dateValue.seconds * 1000);
       return null;
   };
 
@@ -64,7 +78,6 @@ const PropertyInfo = ({ property }: { property: any }) => {
         </div>
         <div className="text-right flex-shrink-0 ml-4">
           <p className="text-3xl font-bold text-brand-blue">{formatCurrency(property.price)}</p>
-          {/* Exibe a data e o rótulo corretos */}
           <p className="text-sm text-gray-500">{dateLabel} {displayDate}</p>
         </div>
       </div>
@@ -79,6 +92,9 @@ const PropertyInfo = ({ property }: { property: any }) => {
           </ul>
         </div>
       )}
+
+      {/* Renderiza o componente de financiamento se a propriedade for verdadeira */}
+      {property.financingAvailable && <FinancingInfo />}
     </div>
   );
 };

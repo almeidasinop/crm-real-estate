@@ -2,20 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import ReactQuill, { Quill } from 'react-quill'; // 1. Importar o Quill
-
-// 2. Importar módulos e estilos do quill-emoji e o CSS padrão do Quill
+import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import "quill-emoji/dist/quill-emoji.css";
 import * as Emoji from "quill-emoji";
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useCreateProperty, useUpdateProperty } from '@/hooks/use-properties';
 import { useAgents } from '@/hooks/use-agents';
@@ -24,7 +21,6 @@ import { storage } from '@/lib/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { UploadCloud, X } from 'lucide-react';
 
-// 3. Registrar o módulo de emoji com o Quill (faça isso fora do componente)
 Quill.register("modules/emoji", Emoji);
 
 const propertyTypes = ['Apartamento', 'Casa', 'Casa de Alto Padrão', 'Comercial', 'Condomínio', 'Espaço de escritório', 'Rural', 'Terreno'] as const;
@@ -56,6 +52,7 @@ const propertySchema = z.object({
   condominiumFee: z.preprocess(val => (val === "" || val === null ? undefined : Number(val)), z.number().nonnegative().optional()),
   iptu: z.preprocess(val => (val === "" || val === null ? undefined : Number(val)), z.number().nonnegative().optional()),
   isFeatured: z.boolean().default(false),
+  financingAvailable: z.boolean().default(false),
   tags: z.string().optional(),
   videoUrl: z.string().url().optional().or(z.literal('')),
   longDescription: z.string().optional(),
@@ -93,7 +90,7 @@ const PropertyForm: React.FC<any> = ({ onSuccess, onCancel, initialData, isEditi
     watch
   } = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
-    defaultValues: initialData || { status: 'venda', features: [], images: [], isFeatured: false }
+    defaultValues: initialData || { status: 'venda', features: [], images: [], isFeatured: false, financingAvailable: false }
   });
 
   const images = watch('images');
@@ -169,16 +166,14 @@ const PropertyForm: React.FC<any> = ({ onSuccess, onCancel, initialData, isEditi
     } finally { setIsSubmitting(false); }
   };
 
-  // 4. Atualizar os módulos para incluir o emoji
   const quillModules = {
     toolbar: [
       [{ 'header': [1, 2, 3, false] }],
       ['bold', 'italic', 'underline','strike', 'blockquote'],
       [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
-      ['link', 'emoji'], // Adicionado o botão de emoji
+      ['link', 'emoji'],
       ['clean']
     ],
-    // Adicionadas as configurações do módulo de emoji
     "emoji-toolbar": true,
     "emoji-textarea": false,
     "emoji-shortname": true,
@@ -189,9 +184,40 @@ const PropertyForm: React.FC<any> = ({ onSuccess, onCancel, initialData, isEditi
         <Card>
           <CardHeader><CardTitle>Informações Básicas</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label htmlFor="title">Título *</Label><Input id="title" {...register('title')} />{errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}</div>
-                  <div className="space-y-2"><Label htmlFor="agentId">Corretor *</Label><Controller name="agentId" control={control} render={({ field }) => (<Select onValueChange={field.onChange} value={field.value} disabled={isLoadingAgents}><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger><SelectContent>{agents?.map(agent => <SelectItem key={agent.id} value={agent.id}>{agent.name}</SelectItem>)}</SelectContent></Select>)} />{errors.agentId && <p className="text-sm text-red-500">{errors.agentId.message}</p>}</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                  {/* Título ocupando a linha inteira */}
+                  <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="title">Título *</Label>
+                      <Input id="title" {...register('title')} />
+                      {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
+                  </div>
+
+                  {/* Corretor */}
+                  <div className="space-y-2">
+                      <Label htmlFor="agentId">Corretor *</Label>
+                      <Controller name="agentId" control={control} render={({ field }) => (
+                          <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingAgents}>
+                              <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                              <SelectContent>{agents?.map(agent => <SelectItem key={agent.id} value={agent.id}>{agent.name}</SelectItem>)}</SelectContent>
+                          </Select>
+                      )} />
+                      {errors.agentId && <p className="text-sm text-red-500">{errors.agentId.message}</p>}
+                  </div>
+
+                  {/* Botão de Financiamento */}
+                  <div className="space-y-2">
+                      <div className="flex items-center space-x-2 pb-2">
+                          <Controller name="financingAvailable" control={control} render={({ field }) => (
+                              <Switch 
+                                  id="financingAvailable" 
+                                  checked={field.value} 
+                                  onCheckedChange={field.onChange}
+                                  className="data-[state=checked]:bg-green-600" // Fundo verde quando ativo
+                              />
+                          )} />
+                          <Label htmlFor="financingAvailable">Apto para financiamento</Label>
+                      </div>
+                  </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2"><Label htmlFor="type">Tipo *</Label><Controller name="type" control={control} render={({ field }) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{propertyTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}</SelectContent></Select>)} /></div>
@@ -220,9 +246,9 @@ const PropertyForm: React.FC<any> = ({ onSuccess, onCancel, initialData, isEditi
                       control={control}
                       render={({ field }) => <ReactQuill 
                         theme="snow" 
-                        value={field.value || ''} // Garantir que o valor não seja undefined
+                        value={field.value || ''}
                         onChange={field.onChange} 
-                        modules={quillModules} // Usar os módulos atualizados
+                        modules={quillModules}
                         placeholder="Descreva os detalhes do imóvel aqui..."
                       />}
                     />
