@@ -18,13 +18,9 @@ const FinancingInfo = () => (
   <div className="mt-6 border-t border-gray-200 pt-6">
     <div className="flex items-center justify-between">
       <div>
-        <h3 className="text-xl font-bold text-gray-800">Imóvel Financiável</h3>
-        <p className="text-gray-600 mt-1">
-          Este imóvel está <span className="font-bold text-green-600">apto para financiamento</span> por bancos e instituições parceiras.
-        </p>
-        <p className="text-sm text-gray-500 mt-2">
-          Simule as melhores condições em um só lugar e encontre a taxa ideal para o seu perfil — rápido, seguro e sem burocracia.
-        </p>
+        <h3 className="text-xl font-bold text-gray-800">Financiamento Fácil</h3>
+        <p className="text-gray-600 mt-1">Pretende Financiar? <span className="font-bold">SIMULE AS MELHORES TAXAS EM UM SÓ LUGAR</span></p>
+        <p className="text-sm text-gray-500 mt-2">Simule seu financiamento em minutos com todos os bancos e consiga a melhor proposta.</p>
       </div>
       <img 
         src="https://firebasestorage.googleapis.com/v0/b/imob-crm.firebasestorage.app/o/cross_sell.svg?alt=media&token=b8157962-827d-44ad-9c0f-378bb14a74a9" 
@@ -66,7 +62,9 @@ const PropertyInfo = ({ property }: { property: any }) => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg">
-      <div className="flex justify-between items-start mb-4">
+      {/* Container principal ajustado para ser responsivo */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+        {/* Bloco do Título e Localização */}
         <div>
           <h1 className="text-3xl font-bold text-gray-800">{property.title || 'Título não informado'}</h1>
           {location && (
@@ -76,8 +74,10 @@ const PropertyInfo = ({ property }: { property: any }) => {
             </p>
           )}
         </div>
-        <div className="text-right flex-shrink-0 ml-4">
-          <p className="text-3xl font-bold text-brand-blue">{formatCurrency(property.price)}</p>
+        {/* Bloco do Preço e Data (com margem e alinhamento responsivos) */}
+        <div className="mt-4 md:mt-0 md:text-right md:flex-shrink-0 md:ml-4">
+          {/* Tamanho da fonte ajustado para ser responsivo */}
+          <p className="text-2xl md:text-3xl font-bold text-brand-blue">{formatCurrency(property.price)}</p>
           <p className="text-sm text-gray-500">{dateLabel} {displayDate}</p>
         </div>
       </div>
