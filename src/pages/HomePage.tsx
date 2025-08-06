@@ -217,12 +217,12 @@ const HomePage = () => {
                 {/* Controles do Carrossel */}
                 {activeBanners.length > 1 && (
                     <>
-                        <button onClick={prevBanner} className="absolute top-1/2 left-4 -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 z-20">
+                        {/* <button onClick={prevBanner} className="absolute top-1/2 left-4 -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 z-20">
                             <ChevronLeft size={24} />
                         </button>
                         <button onClick={nextBanner} className="absolute top-1/2 right-4 -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 z-20">
                             <ChevronRight size={24} />
-                        </button>
+                        </button> */}
                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
                             {activeBanners.map((_, index) => (
                                 <button key={index} onClick={() => setCurrentBanner(index)} className={`h-2 w-2 rounded-full ${currentBanner === index ? 'bg-white' : 'bg-white/50'}`}></button>
