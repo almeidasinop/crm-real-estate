@@ -1,18 +1,14 @@
-
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
 
-// Componentes de Rota
+// Componentes e Páginas
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-
-// Páginas Públicas
 import HomePage from "./pages/HomePage";
 import PropertyDisplayPage from "./pages/PropertyDisplayPage";
 import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
-
-// Páginas do CRM
 import DashboardPage from "./pages/DashboardPage";
 import PropriedadesPage from "./pages/PropriedadesPage";
 import ParcelsDetailsPage from "./pages/ParcelsDetailsPage";
@@ -27,23 +23,20 @@ import FirebaseTestPage from "./pages/FirebaseTestPage";
 import SettingsPage from "./pages/SettingsPage"; 
 
 // Contextos e Utilitários
-import { useEffect } from "react";
 import { CRMProvider } from "./contexts/CRMContext";
 import { StatisticsProvider } from "./contexts/StatisticsContext";
 import { AppSettingsProvider } from "./contexts/AppSettingsContext";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { trackPageView } from "./utils/analytics";
+// --- CORREÇÃO AQUI: Revertido para o import original ---
 import { ThemeProvider } from "next-themes";
 
-// --- Definição das Rotas ---
-
+// --- Definição das Rotas (sem alterações) ---
 const publicRoutes = [
   { path: "/", element: <HomePage /> },
   { path: "/imovel/:id", element: <PropertyDisplayPage /> },
   { path: "/login", element: <LoginPage /> },
 ];
-
-// Rotas para todos os usuários logados (admin e corretor)
 const crmRoutes = [
   { path: "/dashboard", element: <DashboardPage /> },
   { path: "/propriedades", element: <PropriedadesPage /> },
@@ -57,20 +50,16 @@ const crmRoutes = [
   { path: "/estatisticas", element: <StatisticsProvider><StatsPage /></StatisticsProvider> },
   { path: "/teste-firebase", element: <FirebaseTestPage /> },
 ];
-
-// Rotas exclusivas para admin
 const adminRoutes = [
   { path: "/settings", element: <SettingsPage /> }
 ];
-
 const redirects = [
   { from: "/relatorios", to: "/estatisticas" },
   { from: "/configuracoes", to: "/dashboard" },
   { from: "/admin", to: "/settings" },
 ];
 
-// --- Configurações ---
-const queryClient = new QueryClient({ /* ...opções... */ });
+const queryClient = new QueryClient();
 
 const RouterChangeHandler = () => {
   useEffect(() => {
@@ -83,42 +72,57 @@ const RouterChangeHandler = () => {
   return null;
 };
 
-// --- Componente Principal ---
+// --- NOVO COMPONENTE PARA CONTROLAR O TEMA E CONTEÚDO ---
+const AppContent = () => {
+  const { user } = useAuth();
+
+  return (
+    <ThemeProvider 
+      attribute="class"
+      defaultTheme="system" 
+      enableSystem
+      // Força o tema claro se não houver utilizador
+      forcedTheme={!user ? 'light' : undefined}
+    >
+      <QueryClientProvider client={queryClient}>
+        <AppSettingsProvider>
+          <CRMProvider>
+            <TooltipProvider>
+              <RouterChangeHandler />
+              <Routes>
+                {/* Rotas Públicas */}
+                {publicRoutes.map(r => <Route key={r.path} path={r.path} element={r.element} />)}
+
+                {/* Rotas Protegidas para todos os usuários logados */}
+                <Route element={<ProtectedRoute />}>
+                  {crmRoutes.map(r => <Route key={r.path} path={r.path} element={r.element} />)}
+                </Route>
+
+                {/* Rotas Protegidas exclusivas para Admin */}
+                <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+                  {adminRoutes.map(r => <Route key={r.path} path={r.path} element={r.element} />)}
+                </Route>
+
+                {/* Redirecionamentos */}
+                {redirects.map(r => <Route key={r.from} path={r.from} element={<Navigate to={r.to} replace />} />)}
+
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </TooltipProvider>
+          </CRMProvider>
+        </AppSettingsProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
+  );
+};
+
+// --- COMPONENTE PRINCIPAL REESTRUTURADO ---
 const App = () => {
   return (
     <BrowserRouter>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <AuthProvider>
-          <QueryClientProvider client={queryClient}>
-            <AppSettingsProvider>
-              <CRMProvider>
-                <TooltipProvider>
-                  <RouterChangeHandler />
-                  <Routes>
-                    {/* Rotas Públicas */}
-                    {publicRoutes.map(r => <Route key={r.path} path={r.path} element={r.element} />)}
-
-                    {/* Rotas Protegidas para todos os usuários logados */}
-                    <Route element={<ProtectedRoute />}>
-                      {crmRoutes.map(r => <Route key={r.path} path={r.path} element={r.element} />)}
-                    </Route>
-
-                    {/* Rotas Protegidas exclusivas para Admin */}
-                    <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-                      {adminRoutes.map(r => <Route key={r.path} path={r.path} element={r.element} />)}
-                    </Route>
-
-                    {/* Redirecionamentos */}
-                    {redirects.map(r => <Route key={r.from} path={r.from} element={<Navigate to={r.to} replace />} />)}
-
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </TooltipProvider>
-              </CRMProvider>
-            </AppSettingsProvider>
-          </QueryClientProvider>
-        </AuthProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </BrowserRouter>
   );
 };
