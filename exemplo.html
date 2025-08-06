@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casa de Alto Padrão no Recanto Suiço - Sonhar Imóveis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .main-image-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 0.5rem;
+            transition: background-image 0.3s ease-in-out;
+        }
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .nav-arrow.left { left: 10px; }
+        .nav-arrow.right { right: 10px; }
+        .thumbnail {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid transparent;
+        }
+        .thumbnail:hover {
+            transform: scale(1.05);
+        }
+        .thumbnail.active {
+            border-color: #3b82f6; /* Tailwind's blue-500 */
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 lg:px-8 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-blue-600">Sonhar Imóveis</a>
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#" class="text-gray-600 hover:text-blue-600 transition">Home</a>
+                <a href="#" class="text-gray-600 hover:text-blue-600 transition">Imóveis</a>
+                <a href="#" class="text-gray-600 hover:text-blue-600 transition">Sobre Nós</a>
+                <a href="#" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Contato</a>
+            </div>
+            <button class="md:hidden text-gray-600">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto p-4 lg:p-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Coluna Principal -->
+            <div class="lg:col-span-2">
+                <!-- Image Gallery -->
+                <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+                    <div id="mainImage" class="main-image-container mb-4">
+                         <button id="prevBtn" class="nav-arrow left"><i class="fas fa-chevron-left"></i></button>
+                         <button id="nextBtn" class="nav-arrow right"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div id="thumbnailContainer" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                        <!-- Thumbnails serão inseridas aqui via JS -->
+                    </div>
+                </div>
+
+                <!-- Property Details -->
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800">CASA DE ALTO PADRÃO NO RECANTO SUIÇO</h1>
+                            <p class="text-gray-500"><i class="fas fa-map-marker-alt mr-2"></i>Sinop, Mato Grosso</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-3xl font-bold text-blue-600">R$2.500.000,00</p>
+                            <p class="text-sm text-gray-500">Publicado em 06 de Junho, 2023</p>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-6">
+                        <h2 class="text-2xl font-semibold text-gray-700 mb-4">Descrição do Imóvel</h2>
+                        <ul class="space-y-3 text-gray-600 list-disc list-inside">
+                            <li>Pé direito de 4,5m na sala de TV, jardim de inverno e área gourmet; 2m nos quartos.</li>
+                            <li>Toda em laje rebaixada em gesso.</li>
+                            <li>Esquadrias linha Safira Plug.</li>
+                            <li>Água quente com aquecimento solar (boiler de 600L Soletrol).</li>
+                            <li>Energia solar fotovoltaica Weg.</li>
+                            <li>Metais Docol em inox e louças Deca.</li>
+                            <li>Fiação elétrica trifásica Corfio.</li>
+                            <li>Casa Inteligente com automação completa (persianas, ar condicionado, luzes, portão, piscina, câmeras) com integração Alexa.</li>
+                            <li>Piscina com aquecimento solar e acessórios ihotz.</li>
+                            <li>Jardinagem e paisagismo inclusos.</li>
+                            <li>Portas internas em madeira maciça.</li>
+                            <li>Fachada com Pele de vidro e Ripado.</li>
+                            <li>Gás encanado na cozinha e área gourmet.</li>
+                            <li>Poço artesiano e reservatório de água de 2.500L.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="border-t border-gray-200 mt-6 pt-6">
+                        <h2 class="text-2xl font-semibold text-gray-700 mb-4">Detalhes</h2>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
+                            <div class="bg-gray-100 p-4 rounded-lg">
+                                <p class="font-bold text-xl text-blue-600">2023</p>
+                                <p class="text-gray-600">Ano de Construção</p>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg">
+                                <p class="font-bold text-xl text-blue-600">289 m²</p>
+                                <p class="text-gray-600">Área Construída</p>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg">
+                                <p class="font-bold text-xl text-blue-600">440 m²</p>
+                                <p class="text-gray-600">Área do Terreno</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 mt-6 pt-6">
+                        <h2 class="text-2xl font-semibold text-gray-700 mb-4">Comodidades</h2>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                            <div class="flex items-center text-gray-700"><i class="fas fa-utensils text-blue-500 mr-3 text-xl"></i> Cozinha</div>
+                            <div class="flex items-center text-gray-700"><i class="fas fa-swimmer text-blue-500 mr-3 text-xl"></i> Piscina</div>
+                            <div class="flex items-center text-gray-700"><i class="fas fa-car text-blue-500 mr-3 text-xl"></i> Garagem</div>
+                            <div class="flex items-center text-gray-700"><i class="fas fa-tint text-blue-500 mr-3 text-xl"></i> Lavanderia</div>
+                            <div class="flex items-center text-gray-700"><i class="fas fa-tree text-blue-500 mr-3 text-xl"></i> Jardim</div>
+                            <div class="flex items-center text-gray-700"><i class="fas fa-shield-alt text-blue-500 mr-3 text-xl"></i> Segurança</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-8">
+                <!-- Agent Info -->
+                <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                    <img src="https://placehold.co/100x100/E2E8F0/4A5568?text=GP" alt="Foto do Corretor" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-blue-200">
+                    <h3 class="text-xl font-semibold text-gray-800">Glaucio Plablo</h3>
+                    <p class="text-gray-500">Corretor de Imóveis</p>
+                    <div class="mt-4 space-y-2">
+                        <a href="mailto:glaucio@sonharimoveismt.br" class="block w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"><i class="fas fa-envelope mr-2"></i> E-mail</a>
+                        <a href="tel:+5566999851275" class="block w-full bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"><i class="fas fa-phone mr-2"></i> Telefone</a>
+                    </div>
+                </div>
+
+                <!-- Agendar Visita Form -->
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Agendar uma Visita</h3>
+                    <form class="space-y-4">
+                        <input type="text" placeholder="Nome" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="email" placeholder="Email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="tel" placeholder="Telefone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-500">
+                        <textarea placeholder="Mensagem" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">Enviar Pedido</button>
+                    </form>
+                </div>
+
+                <!-- Price Calculator -->
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Calculadora de Financiamento</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="preco_compra" class="block text-sm font-medium text-gray-700">Preço de Compra (R$)</label>
+                            <input type="number" id="preco_compra" value="2500000" class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="entrada" class="block text-sm font-medium text-gray-700">Entrada (%)</label>
+                            <input type="number" id="entrada" value="20" class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="taxa" class="block text-sm font-medium text-gray-700">Taxa de Juros Anual (%)</label>
+                            <input type="number" id="taxa" value="6.5" step="0.1" class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="prazo" class="block text-sm font-medium text-gray-700">Prazo (Anos)</label>
+                            <input type="number" id="prazo" value="30" class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <button id="calculateBtn" class="w-full bg-gray-700 text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition">Calcular</button>
+                    </div>
+                    <div id="result" class="mt-4 text-center"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-12">
+        <div class="container mx-auto px-4 lg:px-8 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h4 class="text-xl font-bold mb-4">Sonhar Imóveis</h4>
+                    <p class="text-gray-400">A corretora que transforma seus sonhos em realidade, encontrando o lar perfeito para cada cliente.</p>
+                    <p class="text-gray-400 mt-2">CRECI-16624 J</p>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold mb-4">Links Rápidos</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Imóveis à Venda</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Sobre Nós</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Contato</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold mb-4">Contato</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li class="flex items-center"><i class="fas fa-phone mr-3"></i> +55 66 99985-1275</li>
+                        <li class="flex items-center"><i class="fas fa-envelope mr-3"></i> sonharimoveisgr@gmail.com</li>
+                        <li class="flex items-center"><i class="fas fa-map-marker-alt mr-3"></i> Sinop, Mato Grosso, Brasil</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-500">
+                <p>&copy; 2023 Sonhar Imóveis. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Image Gallery ---
+            const images = [
+                'https://placehold.co/1200x675/A3BFFA/FFFFFF?text=Fachada+Moderna',
+                'https://placehold.co/1200x675/B2CCFF/FFFFFF?text=Área+Gourmet',
+                'https://placehold.co/1200x675/C1D9FF/FFFFFF?text=Piscina',
+                'https://placehold.co/1200x675/D0E6FF/FFFFFF?text=Sala+de+Estar',
+                'https://placehold.co/1200x675/E0F3FF/FFFFFF?text=Cozinha'
+            ];
+            let currentImageIndex = 0;
+
+            const mainImage = document.getElementById('mainImage');
+            const thumbnailContainer = document.getElementById('thumbnailContainer');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            function updateMainImage(index) {
+                mainImage.style.backgroundImage = `url('${images[index]}')`;
+                currentImageIndex = index;
+                updateThumbnails();
+            }
+
+            function updateThumbnails() {
+                const thumbnails = document.querySelectorAll('.thumbnail');
+                thumbnails.forEach((thumb, idx) => {
+                    if (idx === currentImageIndex) {
+                        thumb.classList.add('active');
+                    } else {
+                        thumb.classList.remove('active');
+                    }
+                });
+            }
+
+            images.forEach((src, index) => {
+                const thumb = document.createElement('img');
+                thumb.src = src.replace('1200x675', '200x112');
+                thumb.alt = `Thumbnail ${index + 1}`;
+                thumb.className = 'thumbnail w-full h-auto object-cover rounded-md border-2 border-transparent';
+                thumb.addEventListener('click', () => updateMainImage(index));
+                thumbnailContainer.appendChild(thumb);
+            });
+
+            prevBtn.addEventListener('click', () => {
+                const newIndex = (currentImageIndex - 1 + images.length) % images.length;
+                updateMainImage(newIndex);
+            });
+
+            nextBtn.addEventListener('click', () => {
+                const newIndex = (currentImageIndex + 1) % images.length;
+                updateMainImage(newIndex);
+            });
+
+            updateMainImage(0);
+
+            // --- Mortgage Calculator ---
+            const calculateBtn = document.getElementById('calculateBtn');
+            calculateBtn.addEventListener('click', function () {
+                const price = parseFloat(document.getElementById('preco_compra').value);
+                const downPaymentPercent = parseFloat(document.getElementById('entrada').value);
+                const annualRate = parseFloat(document.getElementById('taxa').value);
+                const years = parseInt(document.getElementById('prazo').value);
+                const resultDiv = document.getElementById('result');
+
+                if (isNaN(price) || isNaN(downPaymentPercent) || isNaN(annualRate) || isNaN(years) || price <= 0 || annualRate <= 0 || years <= 0) {
+                    resultDiv.innerHTML = `<p class="text-red-500">Por favor, preencha todos os campos corretamente.</p>`;
+                    return;
+                }
+
+                const principal = price - (price * (downPaymentPercent / 100));
+                const monthlyRate = annualRate / 12 / 100;
+                const numberOfPayments = years * 12;
+
+                const monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+                
+                if (isFinite(monthlyPayment)) {
+                     resultDiv.innerHTML = `
+                        <p class="text-gray-600">Pagamento Mensal Estimado:</p>
+                        <p class="text-2xl font-bold text-blue-600">R$ ${monthlyPayment.toFixed(2).replace('.', ',')}</p>
+                    `;
+                } else {
+                     resultDiv.innerHTML = `<p class="text-red-500">Não foi possível calcular. Verifique os valores.</p>`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

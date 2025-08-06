@@ -1,574 +1,287 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useState, useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import ReactQuill, { Quill } from 'react-quill'; // 1. Importar o Quill
+
+// 2. Importar módulos e estilos do quill-emoji e o CSS padrão do Quill
+import 'react-quill/dist/quill.snow.css';
+import "quill-emoji/dist/quill-emoji.css";
+import * as Emoji from "quill-emoji";
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { useCreateProperty } from '@/hooks/use-properties';
+import { useCreateProperty, useUpdateProperty } from '@/hooks/use-properties';
+import { useAgents } from '@/hooks/use-agents';
+import { useAuth } from '@/contexts/AuthContext';
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { UploadCloud, X } from 'lucide-react';
 
-// Schema de validação
+// 3. Registrar o módulo de emoji com o Quill (faça isso fora do componente)
+Quill.register("modules/emoji", Emoji);
+
+const propertyTypes = ['Apartamento', 'Casa', 'Casa de Alto Padrão', 'Comercial', 'Condomínio', 'Espaço de escritório', 'Rural', 'Terreno'] as const;
+const propertyStatus = ['aluguel', 'arrendamento', 'venda', 'reservado', 'vendido', 'inativo'] as const;
+const predefinedFeatures = ['Ar condicionado', 'Armários', 'Biblioteca', 'Cozinha', 'Escritório', 'Espaço ao ar livre', 'Estacionamento', 'Garagem', 'Internet / Wi-Fi', 'Laje', 'Lareira', 'Lavandaria', 'Mobiliado', 'Painéis solares', 'Pátio', 'pé direito amplo', 'Piscina', 'Pisos de madeira', 'Poço de luz', 'Quarto', 'Sacada', 'Sala de mídia', 'Suíte', 'Suíte Master', 'TV Cabo'] as const;
+
 const propertySchema = z.object({
-  title: z.string().min(3, 'Título deve ter pelo menos 3 caracteres'),
-  description: z.string().min(10, 'Descrição deve ter pelo menos 10 caracteres'),
-  type: z.enum(['apartamento', 'casa', 'comercial', 'terreno', 'cobertura', 'studio']),
-  status: z.enum(['disponivel', 'vendido', 'alugado', 'reservado', 'inativo']),
-  price: z.number().min(0, 'Preço deve ser maior que zero'),
-  area: z.number().min(1, 'Área deve ser maior que zero'),
-  bedrooms: z.number().min(0, 'Número de quartos deve ser zero ou maior'),
-  bathrooms: z.number().min(1, 'Deve ter pelo menos 1 banheiro'),
-  parkingSpaces: z.number().min(0, 'Número de vagas deve ser zero ou maior'),
+  title: z.string().min(3, 'Título é obrigatório'),
+  type: z.enum(propertyTypes),
+  status: z.enum(propertyStatus),
+  price: z.number().nonnegative(),
+  builtArea: z.preprocess(val => (val === "" || val === null ? undefined : Number(val)), z.number().nonnegative().optional()),
+  landArea: z.preprocess(val => (val === "" || val === null ? undefined : Number(val)), z.number().nonnegative().optional()),
+  agentId: z.string().min(1, 'Corretor é obrigatório'),
   address: z.object({
-    street: z.string().min(3, 'Rua deve ter pelo menos 3 caracteres'),
-    number: z.string().min(1, 'Número é obrigatório'),
-    neighborhood: z.string().min(2, 'Bairro deve ter pelo menos 2 caracteres'),
-    city: z.string().min(2, 'Cidade deve ter pelo menos 2 caracteres'),
+    street: z.string().optional(),
+    city: z.string().min(2, 'Cidade é obrigatória'),
     state: z.string().length(2, 'Estado deve ter 2 caracteres'),
-    zipCode: z.string().min(8, 'CEP deve ter pelo menos 8 caracteres')
+    zipCode: z.string().optional(),
+    neighborhood: z.string().optional(),
   }),
-  features: z.array(z.string()).optional(),
-  highlights: z.array(z.string()).optional(),
-  energyRating: z.enum(['A', 'B', 'C', 'D', 'E', 'F', 'G']).optional(),
-  condominiumFee: z.number().optional(),
-  iptu: z.number().optional(),
-  tags: z.array(z.string()).optional(),
-  isFeatured: z.boolean().default(false)
+  location: z.object({ lat: z.number(), lng: z.number() }).optional(),
+  description: z.string().optional(),
+  bedrooms: z.number().nonnegative().optional(),
+  bathrooms: z.number().nonnegative().optional(),
+  parkingSpaces: z.number().nonnegative().optional(),
+  features: z.array(z.string()).default([]),
+  images: z.array(z.object({ url: z.string() })).default([]),
+  condominiumFee: z.preprocess(val => (val === "" || val === null ? undefined : Number(val)), z.number().nonnegative().optional()),
+  iptu: z.preprocess(val => (val === "" || val === null ? undefined : Number(val)), z.number().nonnegative().optional()),
+  isFeatured: z.boolean().default(false),
+  tags: z.string().optional(),
+  videoUrl: z.string().url().optional().or(z.literal('')),
+  longDescription: z.string().optional(),
 });
 
 type PropertyFormData = z.infer<typeof propertySchema>;
 
-interface PropertyFormProps {
-  onSuccess?: () => void;
-  onCancel?: () => void;
-  initialData?: Partial<PropertyFormData>;
-  isEditing?: boolean;
-}
+const getCoordinatesFromAddress = async (address: PropertyFormData['address']) => {
+    const fullAddress = `${address.street}, ${address.city}, ${address.state}`;
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) return null;
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${apiKey}`;
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        return data.status === 'OK' ? data.results[0].geometry.location : null;
+    } catch { return null; }
+};
 
-const PropertyForm: React.FC<PropertyFormProps> = ({
-  onSuccess,
-  onCancel,
-  initialData,
-  isEditing = false
-}) => {
+const PropertyForm: React.FC<any> = ({ onSuccess, onCancel, initialData, isEditing = false }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [features, setFeatures] = useState<string[]>(initialData?.features || []);
-  const [highlights, setHighlights] = useState<string[]>(initialData?.highlights || []);
-  const [tags, setTags] = useState<string[]>(initialData?.tags || []);
-
+  const [isUploading, setIsUploading] = useState(false);
+  const { data: agents, isLoading: isLoadingAgents } = useAgents();
+  const { user } = useAuth();
   const createProperty = useCreateProperty();
+  const updateProperty = useUpdateProperty();
 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
+    reset,
     setValue,
-    watch,
-    reset
+    watch
   } = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
-    defaultValues: {
-      title: initialData?.title || '',
-      description: initialData?.description || '',
-      type: initialData?.type || 'apartamento',
-      status: initialData?.status || 'disponivel',
-      price: initialData?.price || 0,
-      area: initialData?.area || 0,
-      bedrooms: initialData?.bedrooms || 0,
-      bathrooms: initialData?.bathrooms || 1,
-      parkingSpaces: initialData?.parkingSpaces || 0,
-      address: {
-        street: initialData?.address?.street || '',
-        number: initialData?.address?.number || '',
-        neighborhood: initialData?.address?.neighborhood || '',
-        city: initialData?.address?.city || '',
-        state: initialData?.address?.state || '',
-        zipCode: initialData?.address?.zipCode || ''
-      },
-      energyRating: initialData?.energyRating || 'A',
-      condominiumFee: initialData?.condominiumFee || 0,
-      iptu: initialData?.iptu || 0,
-      isFeatured: initialData?.isFeatured || false
-    }
+    defaultValues: initialData || { status: 'venda', features: [], images: [], isFeatured: false }
   });
 
-  const watchedType = watch('type');
+  const images = watch('images');
+
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        ...initialData,
+        agentId: initialData.broker?.id || initialData.agentId || '',
+        features: initialData.amenities || [],
+        tags: Array.isArray(initialData.tags) ? initialData.tags.join(', ') : initialData.tags,
+      });
+    }
+  }, [initialData, reset]);
+  
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setIsUploading(true);
+    const uploadPromises = Array.from(files).map(file => {
+      const storageRef = ref(storage, `properties/${Date.now()}-${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      return new Promise<{ url: string }>((resolve, reject) => {
+        uploadTask.on('state_changed', () => {}, reject, async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve({ url: downloadURL });
+        });
+      });
+    });
+    try {
+      const newImages = await Promise.all(uploadPromises);
+      setValue('images', [...(images || []), ...newImages]);
+      toast.success("Imagens enviadas!");
+    } catch (error) { toast.error("Falha no upload."); } finally { setIsUploading(false); }
+  };
+  
+  const handleRemoveImage = (index: number) => {
+    setValue('images', images.filter((_, i) => i !== index));
+  };
 
   const onSubmit = async (data: PropertyFormData) => {
+    if (!user) { toast.error("Você precisa estar logado."); return; }
     setIsSubmitting(true);
     
-    try {
-      const propertyData = {
-        ...data,
-        features,
-        highlights,
-        tags,
-        images: [],
-        documents: [],
-        agentId: 'system', // Será substituído pelo agente logado
-        owner: {
-          name: '',
-          email: '',
-          phone: '',
-          document: ''
+    const coordinates = await getCoordinatesFromAddress(data.address);
+    
+    const cleanData: { [key: string]: any } = {};
+    Object.keys(data).forEach(key => {
+        const value = (data as any)[key];
+        if (value !== undefined && value !== null) {
+            cleanData[key] = value;
         }
-      };
+    });
 
-      if (isEditing) {
-        // TODO: Implementar edição
-        toast.success('Propriedade atualizada com sucesso!');
+    const propertyData = {
+      ...cleanData,
+      location: coordinates || null,
+      amenities: cleanData.features,
+      tags: cleanData.tags?.split(',').map((t:string) => t.trim()).filter(Boolean) || [],
+    };
+    delete propertyData.features;
+
+    try {
+      if (isEditing && initialData?.id) {
+        await updateProperty.mutateAsync({ id: initialData.id, updates: propertyData, userId: user.uid });
       } else {
-        await createProperty.mutateAsync({
-          property: propertyData,
-          userId: 'system'
-        });
-        toast.success('Propriedade criada com sucesso!');
+        await createProperty.mutateAsync({ property: propertyData, userId: user.uid });
       }
-
-      reset();
-      setFeatures([]);
-      setHighlights([]);
-      setTags([]);
+      toast.success(`Propriedade ${isEditing ? 'atualizada' : 'criada'}!`);
       onSuccess?.();
-      
-    } catch (error) {
-      console.error('Erro ao salvar propriedade:', error);
-      toast.error('Erro ao salvar propriedade. Tente novamente.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    } catch (error) { 
+      console.error("Erro ao salvar:", error);
+      toast.error('Erro ao salvar propriedade.'); 
+    } finally { setIsSubmitting(false); }
   };
 
-  const addFeature = () => {
-    const newFeature = prompt('Digite uma característica da propriedade:');
-    if (newFeature && newFeature.trim()) {
-      setFeatures([...features, newFeature.trim()]);
-    }
-  };
-
-  const removeFeature = (index: number) => {
-    setFeatures(features.filter((_, i) => i !== index));
-  };
-
-  const addHighlight = () => {
-    const newHighlight = prompt('Digite um destaque da propriedade:');
-    if (newHighlight && newHighlight.trim()) {
-      setHighlights([...highlights, newHighlight.trim()]);
-    }
-  };
-
-  const removeHighlight = (index: number) => {
-    setHighlights(highlights.filter((_, i) => i !== index));
-  };
-
-  const addTag = () => {
-    const newTag = prompt('Digite uma tag:');
-    if (newTag && newTag.trim()) {
-      setTags([...tags, newTag.trim()]);
-    }
-  };
-
-  const removeTag = (index: number) => {
-    setTags(tags.filter((_, i) => i !== index));
+  // 4. Atualizar os módulos para incluir o emoji
+  const quillModules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline','strike', 'blockquote'],
+      [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
+      ['link', 'emoji'], // Adicionado o botão de emoji
+      ['clean']
+    ],
+    // Adicionadas as configurações do módulo de emoji
+    "emoji-toolbar": true,
+    "emoji-textarea": false,
+    "emoji-shortname": true,
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Informações Básicas</CardTitle>
-          <CardDescription>
-            Dados principais da propriedade
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Título *</Label>
-              <Input
-                id="title"
-                {...register('title')}
-                placeholder="Ex: Apartamento 3 quartos com vista para o mar"
-              />
-              {errors.title && (
-                <p className="text-sm text-red-500">{errors.title.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="type">Tipo *</Label>
-              <Select onValueChange={(value) => setValue('type', value as any)} defaultValue={watch('type')}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="apartamento">Apartamento</SelectItem>
-                  <SelectItem value="casa">Casa</SelectItem>
-                  <SelectItem value="comercial">Comercial</SelectItem>
-                  <SelectItem value="terreno">Terreno</SelectItem>
-                  <SelectItem value="cobertura">Cobertura</SelectItem>
-                  <SelectItem value="studio">Studio</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.type && (
-                <p className="text-sm text-red-500">{errors.type.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">Status *</Label>
-              <Select onValueChange={(value) => setValue('status', value as any)} defaultValue={watch('status')}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="disponivel">Disponível</SelectItem>
-                  <SelectItem value="vendido">Vendido</SelectItem>
-                  <SelectItem value="alugado">Alugado</SelectItem>
-                  <SelectItem value="reservado">Reservado</SelectItem>
-                  <SelectItem value="inativo">Inativo</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.status && (
-                <p className="text-sm text-red-500">{errors.status.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="price">Preço (R$) *</Label>
-              <Input
-                id="price"
-                type="number"
-                {...register('price', { valueAsNumber: true })}
-                placeholder="0,00"
-              />
-              {errors.price && (
-                <p className="text-sm text-red-500">{errors.price.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Descrição *</Label>
-            <Textarea
-              id="description"
-              {...register('description')}
-              placeholder="Descreva detalhadamente a propriedade..."
-              rows={4}
-            />
-            {errors.description && (
-              <p className="text-sm text-red-500">{errors.description.message}</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Características</CardTitle>
-          <CardDescription>
-            Dimensões e características físicas
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="area">Área (m²) *</Label>
-              <Input
-                id="area"
-                type="number"
-                {...register('area', { valueAsNumber: true })}
-                placeholder="0"
-              />
-              {errors.area && (
-                <p className="text-sm text-red-500">{errors.area.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bedrooms">Quartos</Label>
-              <Input
-                id="bedrooms"
-                type="number"
-                {...register('bedrooms', { valueAsNumber: true })}
-                placeholder="0"
-              />
-              {errors.bedrooms && (
-                <p className="text-sm text-red-500">{errors.bedrooms.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bathrooms">Banheiros *</Label>
-              <Input
-                id="bathrooms"
-                type="number"
-                {...register('bathrooms', { valueAsNumber: true })}
-                placeholder="1"
-              />
-              {errors.bathrooms && (
-                <p className="text-sm text-red-500">{errors.bathrooms.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="parkingSpaces">Vagas</Label>
-              <Input
-                id="parkingSpaces"
-                type="number"
-                {...register('parkingSpaces', { valueAsNumber: true })}
-                placeholder="0"
-              />
-              {errors.parkingSpaces && (
-                <p className="text-sm text-red-500">{errors.parkingSpaces.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Características específicas por tipo */}
-          {watchedType === 'apartamento' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="energyRating">Classificação Energética</Label>
-                <Select onValueChange={(value) => setValue('energyRating', value as any)} defaultValue={watch('energyRating')}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="A">A</SelectItem>
-                    <SelectItem value="B">B</SelectItem>
-                    <SelectItem value="C">C</SelectItem>
-                    <SelectItem value="D">D</SelectItem>
-                    <SelectItem value="E">E</SelectItem>
-                    <SelectItem value="F">F</SelectItem>
-                    <SelectItem value="G">G</SelectItem>
-                  </SelectContent>
-                </Select>
+        <Card>
+          <CardHeader><CardTitle>Informações Básicas</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label htmlFor="title">Título *</Label><Input id="title" {...register('title')} />{errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}</div>
+                  <div className="space-y-2"><Label htmlFor="agentId">Corretor *</Label><Controller name="agentId" control={control} render={({ field }) => (<Select onValueChange={field.onChange} value={field.value} disabled={isLoadingAgents}><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger><SelectContent>{agents?.map(agent => <SelectItem key={agent.id} value={agent.id}>{agent.name}</SelectItem>)}</SelectContent></Select>)} />{errors.agentId && <p className="text-sm text-red-500">{errors.agentId.message}</p>}</div>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="condominiumFee">Taxa de Condomínio (R$)</Label>
-                <Input
-                  id="condominiumFee"
-                  type="number"
-                  {...register('condominiumFee', { valueAsNumber: true })}
-                  placeholder="0,00"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2"><Label htmlFor="type">Tipo *</Label><Controller name="type" control={control} render={({ field }) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{propertyTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}</SelectContent></Select>)} /></div>
+                  <div className="space-y-2"><Label htmlFor="status">Condição *</Label><Controller name="status" control={control} render={({ field }) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{propertyStatus.map(s => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}</SelectContent></Select>)} /></div>
+                  <div className="space-y-2"><Label htmlFor="price">Preço (R$)</Label><Input id="price" type="number" {...register('price', { valueAsNumber: true })} /></div>
               </div>
-            </div>
-          )}
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader><CardTitle>Imagens</CardTitle></CardHeader>
+          <CardContent>
+              <div className="w-full h-32 border-2 border-dashed rounded-lg flex items-center justify-center text-center"><Label htmlFor="image-upload" className="cursor-pointer"><UploadCloud className="mx-auto h-8 w-8 text-gray-400" /><span className="mt-2 block text-sm font-medium">Arraste e solte ou clique para enviar</span></Label><Input id="image-upload" type="file" multiple className="hidden" onChange={(e) => handleImageUpload(e.target.files)} disabled={isUploading}/></div>
+              {isUploading && <p className="text-sm text-blue-500 mt-2">Enviando...</p>}
+              {images?.length > 0 && (<div className="grid grid-cols-3 md:grid-cols-5 gap-4 mt-4">{images.map((image, index) => (<div key={index} className="relative group"><img src={image.url} alt={`Imagem ${index + 1}`} className="w-full h-24 object-cover rounded-md" /><button type="button" onClick={() => handleRemoveImage(index)} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100"><X size={14} /></button></div>))}</div>)}
+          </CardContent>
+        </Card>
 
-          <div className="space-y-2">
-            <Label htmlFor="iptu">IPTU (R$)</Label>
-            <Input
-              id="iptu"
-              type="number"
-              {...register('iptu', { valueAsNumber: true })}
-              placeholder="0,00"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Endereço</CardTitle>
-          <CardDescription>
-            Localização da propriedade
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="street">Rua *</Label>
-              <Input
-                id="street"
-                {...register('address.street')}
-                placeholder="Nome da rua"
-              />
-              {errors.address?.street && (
-                <p className="text-sm text-red-500">{errors.address.street.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="number">Número *</Label>
-              <Input
-                id="number"
-                {...register('address.number')}
-                placeholder="123"
-              />
-              {errors.address?.number && (
-                <p className="text-sm text-red-500">{errors.address.number.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="neighborhood">Bairro *</Label>
-              <Input
-                id="neighborhood"
-                {...register('address.neighborhood')}
-                placeholder="Nome do bairro"
-              />
-              {errors.address?.neighborhood && (
-                <p className="text-sm text-red-500">{errors.address.neighborhood.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="city">Cidade *</Label>
-              <Input
-                id="city"
-                {...register('address.city')}
-                placeholder="Nome da cidade"
-              />
-              {errors.address?.city && (
-                <p className="text-sm text-red-500">{errors.address.city.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="state">Estado *</Label>
-              <Input
-                id="state"
-                {...register('address.state')}
-                placeholder="SP"
-                maxLength={2}
-              />
-              {errors.address?.state && (
-                <p className="text-sm text-red-500">{errors.address.state.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="zipCode">CEP *</Label>
-              <Input
-                id="zipCode"
-                {...register('address.zipCode')}
-                placeholder="00000-000"
-              />
-              {errors.address?.zipCode && (
-                <p className="text-sm text-red-500">{errors.address.zipCode.message}</p>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Características e Destaques</CardTitle>
-          <CardDescription>
-            Adicione características e destaques da propriedade
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Características */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Características</Label>
-              <Button type="button" variant="outline" size="sm" onClick={addFeature}>
-                + Adicionar
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {features.map((feature, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Input value={feature} readOnly />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeFeature(index)}
-                  >
-                    Remover
-                  </Button>
+        <Card>
+            <CardHeader><CardTitle>Descrição e Vídeo</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+                <div>
+                    <Label htmlFor="longDescription">Descrição Completa do Imóvel</Label>
+                    <Controller
+                      name="longDescription"
+                      control={control}
+                      render={({ field }) => <ReactQuill 
+                        theme="snow" 
+                        value={field.value || ''} // Garantir que o valor não seja undefined
+                        onChange={field.onChange} 
+                        modules={quillModules} // Usar os módulos atualizados
+                        placeholder="Descreva os detalhes do imóvel aqui..."
+                      />}
+                    />
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Destaques */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Destaques</Label>
-              <Button type="button" variant="outline" size="sm" onClick={addHighlight}>
-                + Adicionar
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {highlights.map((highlight, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Input value={highlight} readOnly />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeHighlight(index)}
-                  >
-                    Remover
-                  </Button>
+                <div>
+                    <Label htmlFor="videoUrl">URL do Vídeo (YouTube)</Label>
+                    <Input id="videoUrl" {...register('videoUrl')} placeholder="https://www.youtube.com/watch?v=..." />
+                    {errors.videoUrl && <p className="text-sm text-red-500">{errors.videoUrl.message}</p>}
                 </div>
-              ))}
-            </div>
-          </div>
+            </CardContent>
+        </Card>
 
-          <Separator />
+        <Card>
+            <CardHeader><CardTitle>Detalhes e Dimensões</CardTitle></CardHeader>
+            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-2"><Label htmlFor="builtArea">Área Construída (m²)</Label><Input id="builtArea" type="number" {...register('builtArea', { valueAsNumber: true })} /></div>
+                <div className="space-y-2"><Label htmlFor="landArea">Área do Terreno (m²)</Label><Input id="landArea" type="number" {...register('landArea', { valueAsNumber: true })} /></div>
+                <div className="space-y-2"><Label htmlFor="bedrooms">Quartos</Label><Input id="bedrooms" type="number" {...register('bedrooms', { valueAsNumber: true })} /></div>
+                <div className="space-y-2"><Label htmlFor="bathrooms">Banheiros</Label><Input id="bathrooms" type="number" {...register('bathrooms', { valueAsNumber: true })} /></div>
+                <div className="space-y-2"><Label htmlFor="parkingSpaces">Vagas</Label><Input id="parkingSpaces" type="number" {...register('parkingSpaces', { valueAsNumber: true })} /></div>
+                <div className="space-y-2"><Label htmlFor="condominiumFee">Condomínio (R$)</Label><Input id="condominiumFee" type="number" {...register('condominiumFee')} /></div>
+                <div className="space-y-2"><Label htmlFor="iptu">IPTU (R$)</Label><Input id="iptu" type="number" {...register('iptu')} /></div>
+            </CardContent>
+        </Card>
 
-          {/* Tags */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Tags</Label>
-              <Button type="button" variant="outline" size="sm" onClick={addTag}>
-                + Adicionar
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {tags.map((tag, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Input value={tag} readOnly />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeTag(index)}
-                  >
-                    Remover
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
+        <Card>
+          <CardHeader><CardTitle>Características do Imóvel</CardTitle></CardHeader>
+          <CardContent>
+              <Controller name="features" control={control} render={({ field }) => (<div className="grid grid-cols-2 md:grid-cols-4 gap-4">{predefinedFeatures.map(feature => (<div key={feature} className="flex items-center space-x-2"><Checkbox id={feature} checked={field.value?.includes(feature)} onCheckedChange={checked => field.onChange(checked ? [...(field.value || []), feature] : (field.value || []).filter(v => v !== feature))} /><Label htmlFor={feature} className="font-normal">{feature}</Label></div>))}</div>)} />
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader><CardTitle>Endereço</CardTitle></CardHeader>
+          <CardContent className="grid grid-cols-2 gap-4">
+              <div className="col-span-2"><Label htmlFor="address.street">Rua</Label><Input id="address.street" {...register('address.street')} /></div>
+              <div><Label htmlFor="address.neighborhood">Bairro</Label><Input id="address.neighborhood" {...register('address.neighborhood')} /></div>
+              <div><Label htmlFor="address.city">Cidade *</Label><Input id="address.city" {...register('address.city')} />{errors.address?.city && <p className="text-sm text-red-500">{errors.address.city.message}</p>}</div>
+              <div><Label htmlFor="address.state">Estado *</Label><Input id="address.state" {...register('address.state')} />{errors.address?.state && <p className="text-sm text-red-500">{errors.address.state.message}</p>}</div>
+              <div><Label htmlFor="address.zipCode">CEP</Label><Input id="address.zipCode" {...register('address.zipCode')} /></div>
+          </CardContent>
+        </Card>
 
-          {/* Destaque */}
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="isFeatured"
-              checked={watch('isFeatured')}
-              onCheckedChange={(checked) => setValue('isFeatured', checked)}
-            />
-            <Label htmlFor="isFeatured">Propriedade em destaque</Label>
-          </div>
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader><CardTitle>Publicação</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+              <div className="space-y-2"><Label htmlFor="tags">Tags (separadas por vírgula)</Label><Input id="tags" {...register('tags')} /></div>
+              <div className="flex items-center space-x-2"><Controller name="isFeatured" control={control} render={({ field }) => (<Switch id="isFeatured" checked={field.value} onCheckedChange={field.onChange} />)} /><Label htmlFor="isFeatured">Marcar como destaque</Label></div>
+          </CardContent>
+        </Card>
 
-      <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancelar
-        </Button>
-        <Button type="submit" disabled={isSubmitting || createProperty.isPending}>
-          {isSubmitting || createProperty.isPending ? 'Salvando...' : isEditing ? 'Atualizar' : 'Criar Propriedade'}
-        </Button>
-      </div>
+        <div className="flex justify-end gap-4">
+          <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
+          <Button type="submit" disabled={isSubmitting || isUploading}>
+              {isSubmitting ? 'Salvando...' : 'Salvar'}
+          </Button>
+        </div>
     </form>
   );
 };
 
-export default PropertyForm; 
+export default PropertyForm;

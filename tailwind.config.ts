@@ -67,6 +67,10 @@ export default {
 					primary: 'hsl(var(--button-primary))',
 					'primary-foreground': 'hsl(var(--button-primary-foreground))'
 				},
+				'brand-blue': {
+ DEFAULT: '#0074FF',
+ dark: '#005bbd',
+				},
 				// Custom color palette for real estate theme
 				realty: {
 					'primary': '#1E40AF',
@@ -84,7 +88,8 @@ export default {
 					'warning': '#F59E0B',
 					'danger': '#EF4444',
 					'info': '#06B6D4'
-				}
+				},
+ 'footer-bg': '#131A22',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -145,7 +150,8 @@ export default {
 			},
 			fontFamily: {
 				sans: ['Inter', 'sans-serif'],
-				heading: ['Inter', 'sans-serif']
+ heading: ['Inter', 'sans-serif'],
+ satisfy: ['Satisfy', 'cursive'],
 			},
 			boxShadow: {
 				'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',

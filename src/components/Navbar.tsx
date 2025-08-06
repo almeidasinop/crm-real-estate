@@ -17,11 +17,13 @@ import {
   Users,
   FileText
 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
+  const { role } = useAuth();
   
   // Close mobile menu when route changes
   useEffect(() => {
@@ -53,17 +55,17 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { title: 'Painel Inicial', path: '/dashboard', icon: Home },
-    { title: 'Propriedades', path: '/propriedades', icon: MapPin },
-    { title: 'Leads e Clientes', path: '/clientes', icon: Users },
-    { title: 'Corretores', path: '/agentes', icon: Package },
-    { title: 'Funil de Vendas', path: '/pipeline', icon: BarChart2 },
-    { title: 'Visitas', path: '/visitas', icon: Users },
-    { title: 'Contratos', path: '/contratos', icon: FileText },
-    { title: 'Financeiro', path: '/financeiro', icon: Wallet },
-    { title: 'Relatórios', path: '/estatisticas', icon: BarChart2 },
-    { title: 'Teste Firebase', path: '/teste-firebase', icon: Settings },
-    { title: 'Home', path: '/', icon: Home },
+    { title: 'Painel Inicial', path: '/dashboard', icon: Home, adminOnly: false },
+    { title: 'Propriedades', path: '/propriedades', icon: MapPin, adminOnly: false },
+    { title: 'Leads e Clientes', path: '/clientes', icon: Users, adminOnly: false },
+    { title: 'Corretores', path: '/agentes', icon: Package, adminOnly: false },
+    { title: 'Funil de Vendas', path: '/pipeline', icon: BarChart2, adminOnly: false },
+    { title: 'Visitas', path: '/visitas', icon: Users, adminOnly: false },
+    { title: 'Contratos', path: '/contratos', icon: FileText, adminOnly: false },
+    { title: 'Financeiro', path: '/financeiro', icon: Wallet, adminOnly: false },
+    { title: 'Relatórios', path: '/estatisticas', icon: BarChart2, adminOnly: false },
+    { title: 'Configurações', path: '/settings', icon: Settings, adminOnly: true },
+    { title: 'Home', path: '/', icon: Home, adminOnly: false },
   ];
 
   const isActive = (path: string) => {
@@ -106,7 +108,7 @@ const Navbar = () => {
         </div>
 
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
+          {navItems.filter(item => !item.adminOnly || role === 'admin').map((item) => (
             <Link
               key={item.path}
               to={item.path}

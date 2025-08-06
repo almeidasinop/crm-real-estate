@@ -14,25 +14,30 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center max-w-lg mx-auto p-8">
-        <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
-          <Frown className="h-10 w-10 text-muted-foreground" />
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="text-center max-w-xl mx-auto p-8">
+        {/* Vídeo centralizado, com tamanho controlado */}
+        <div className="w-full max-w-md mx-auto mb-6">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-auto rounded-lg"
+          >
+            <source
+              src="https://static.vecteezy.com/system/resources/previews/026/147/099/mp4/investment-property-business-bw-error-404-animation-investor-house-error-message-gif-motion-graphic-real-estate-agent-selling-home-animated-character-outline-4k-isolated-on-white-background-video.mp4"
+              type="video/mp4"
+            />
+            Seu navegador não suporta vídeos em HTML5.
+          </video>
         </div>
-        <h1 className="text-4xl font-bold mb-4">404</h1>
         <p className="text-xl text-muted-foreground mb-6">
-          La page que vous recherchez n'existe pas ou a été déplacée.
+          A página que você está procurando não existe ou foi movida.
         </p>
-        <Link 
-          to="/" 
-          className="inline-flex items-center px-4 py-2 bg-agri-primary text-white rounded-lg hover:bg-agri-primary-dark transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Retour à l'accueil
-        </Link>
+        <Link to="/"><ArrowLeft className="h-4 w-4 mr-2"/>Voltar para a página inicial</Link>
       </div>
     </div>
   );
 };
-
 export default NotFound;

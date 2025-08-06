@@ -1,108 +1,174 @@
-
-
-import AmenitiesList from "@/components/property-display/AmenitiesList";
-import AdvancedSearch from "@/components/property-display/AdvancedSearch";
-import BookingForm from "@/components/property-display/BookingForm";
-import BrokerCard from "@/components/property-display/BrokerCard";
-import ContactForm from "@/components/property-display/ContactForm";
-import FinancingCalculator from "@/components/property-display/FinancingCalculator";
-import ImageGallery from "@/components/property-display/ImageGallery";
-import PropertyDetailsTable from "@/components/property-display/PropertyDetailsTable";
-import PropertyFooter from "@/components/property-display/PropertyFooter";
-import PropertyHeader from "@/components/property-display/PropertyHeader";
-import PropertyInfo from "@/components/property-display/PropertyInfo";
-import SidePropertyList from "@/components/property-display/SidePropertyList";
+import { useState, useEffect } from 'react';
+import { doc, getDoc } from "firebase/firestore";
+import { db } from '@/lib/firebase';
 import { useParams } from 'react-router-dom';
-import { useProperty, useProperties } from '@/hooks/use-properties';
+import { useProperty } from '@/hooks/use-properties';
 
-// Mock data for a single property
-const mockProperty = {
-  id: 1,
-  title: "Apartamento de Luxo com Vista para o Parque",
-  price: "R$ 2.500.000",
-  publishedDate: "15/07/2024",
-  type: "Venda",
-  description: `Este apartamento exclusivo oferece uma experiência de vida incomparável, com vistas deslumbrantes para o parque e um design de interiores sofisticado. A sala de estar em conceito aberto é perfeita para receber amigos e familiares, enquanto a suíte master proporciona um refúgio de tranquilidade.\n\nLocalizado em um dos bairros mais cobiçados da cidade, o condomínio oferece segurança 24 horas, área de lazer completa com piscina, academia e salão de festas. Uma oportunidade única para quem busca conforto, luxo e qualidade de vida.`,
-  imageUrls: [
-    "https://via.placeholder.com/800x600/1E40AF/FFFFFF?text=Sala+de+Estar",
-    "https://via.placeholder.com/800x600/3B82F6/FFFFFF?text=Cozinha",
-    "https://via.placeholder.com/800x600/1E3A8A/FFFFFF?text=Suíte+Master",
-    "https://via.placeholder.com/800x600/7C3AED/FFFFFF?text=Varanda+Gourmet",
-  ],
-  details: {
-    builtArea: "180 m²",
-    landArea: "N/A",
-    yearBuilt: 2022,
-  },
-  amenities: ["Cozinha", "Piscina", "Garagem", "Lavanderia", "Ar Condicionado", "Mobiliado"],
+// Importando todos os componentes necessários
+import AppHeader from "@/components/layout/AppHeader";
+import AppFooter from "@/components/layout/AppFooter";
+import ImageGallery from "@/components/property-display/ImageGallery";
+import PropertyInfo from "@/components/property-display/PropertyInfo";
+import PropertyDetailsTable from "@/components/property-display/PropertyDetailsTable";
+import AmenitiesList from "@/components/property-display/AmenitiesList";
+import BrokerCard from "@/components/property-display/BrokerCard";
+import PropertyMap from "@/components/property-display/PropertyMap";
+import BookingForm from '@/components/property-display/BookingForm';
+import ProposalForm from '@/components/property-display/ProposalForm';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { PlayCircle } from 'lucide-react';
+
+import { Settings } from '@/types/crm';
+
+const defaultSettings: Settings = {
+    companyName: "Sonhar Imóveis",
+    footerPhone: "(00) 1234-5678",
+    footerEmail: "contato@imobiliaria.com",
+    footerAddress: "Seu Endereço Completo Aqui",
 };
 
-const mockBroker = {
-  name: "Glaucio Plablo",
-  creci: "67890-F",
-  phone: "(11) 98765-4321",
-  imageUrl: "https://via.placeholder.com/150/000000/FFFFFF?text=GP",
+// Componente para a descrição longa, para manter o código principal limpo
+const PropertyDescription = ({ description }: { description?: string }) => {
+  if (!description) return null;
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <h2 className="text-2xl font-semibold text-gray-700 mb-4">Descrição</h2>
+      <div className="prose max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: description }} />
+    </div>
+  );
 };
 
-const recentProperties = [
-  { id: 2, title: "Casa Térrea no Interior", price: "R$ 850.000" },
-  { id: 3, title: "Studio Moderno", price: "R$ 600.000" },
-];
+// --- NOVO COMPONENTE DE VÍDEO COM MODAL ---
+const YouTubeEmbed = ({ videoUrl }: { videoUrl?: string }) => {
+    if (!videoUrl) return null;
 
-const relatedProperties = [
-  { id: 4, title: "Apartamento com 2 Suítes", price: "R$ 2.200.000" },
-  { id: 5, title: "Cobertura com Piscina Privativa", price: "R$ 4.000.000" },
-];
+    const getYouTubeId = (url: string) => {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
 
-// Remova os dados mocados (mockProperty, mockBroker, recentProperties, relatedProperties)
+    const videoId = getYouTubeId(videoUrl);
+
+    if (!videoId) {
+        return (
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h2 className="text-2xl font-semibold text-gray-700 mb-4">Vídeo do Imóvel</h2>
+                <p className="text-red-500">URL do vídeo do YouTube inválida.</p>
+            </div>
+        );
+    }
+
+    const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+
+    return (
+        <Dialog>
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h2 className="text-2xl font-semibold text-gray-700 mb-4">Vídeo do Imóvel</h2>
+                <DialogTrigger asChild>
+                    <div className="relative cursor-pointer group">
+                        <img src={thumbnailUrl} alt="Thumbnail do vídeo" className="w-full rounded-lg object-cover" />
+                        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded-lg transition-opacity opacity-0 group-hover:opacity-100">
+                            <PlayCircle className="h-16 w-16 text-white" />
+                        </div>
+                    </div>
+                </DialogTrigger>
+            </div>
+
+            <DialogContent className="max-w-3xl p-0 border-0 bg-transparent">
+                <div className="aspect-video">
+                    <iframe
+                        className="w-full h-full"
+                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+                        title="YouTube video player"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                    ></iframe>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 
 const PropertyDisplayPage = () => {
   const { id } = useParams<{ id: string }>();
-
-  // Busca a propriedade principal pelo ID
+  const [settings, setSettings] = useState<Settings>(defaultSettings);
   const { data: property, isLoading, isError } = useProperty(id || '');
 
-  // Busca propriedades recentes e relacionadas (exemplo)
-  const { data: recentProperties } = useProperties(5); // 5 mais recentes
-  const { data: relatedProperties } = useProperties(5); // Lógica de relacionamento pode ser mais complexa
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const settingsDocRef = doc(db, "settings", "general");
+      const settingsSnap = await getDoc(settingsDocRef);
+      if (settingsSnap.exists()) {
+        setSettings(settingsSnap.data() as Settings);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   if (isLoading) {
-    return <div>Carregando...</div>;
+    return <div className="flex justify-center items-center h-screen">Carregando...</div>;
   }
 
   if (isError || !property) {
     return <div>Erro ao carregar a propriedade ou propriedade não encontrada.</div>;
   }
-
-  // Dados do corretor podem vir da propriedade ou de outra busca
-  const broker = property.broker; // Supondo que a propriedade tenha os dados do corretor
+  
+  const imageUrls = property.images?.map(img => img.url).filter(Boolean) as string[] || [];
 
   return (
     <div className="bg-gray-50">
-      <PropertyHeader />
+      <AppHeader settings={settings} />
       <main className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
+          {/* Coluna Principal */}
           <div className="lg:col-span-2 space-y-8">
-            <ImageGallery imageUrls={property.imageUrls} />
+            <ImageGallery imageUrls={imageUrls} />
             <PropertyInfo property={property} />
-            <PropertyDetailsTable details={property.details} />
-            <AmenitiesList amenities={property.amenities} />
-            <ContactForm />
+            <PropertyDescription description={property.longDescription} />
+            <YouTubeEmbed videoUrl={property.videoUrl} />
+            <PropertyDetailsTable details={{
+              builtArea: property.builtArea,
+              landArea: property.landArea,
+              bedrooms: property.bedrooms,
+              bathrooms: property.bathrooms,
+              parkingSpaces: property.parkingSpaces,
+            }} />
+            <AmenitiesList amenities={property.amenities || []} />
+            {property.location && property.location.lat && property.location.lng && (
+              <PropertyMap location={property.location} />
+            )}
           </div>
 
-          {/* Sidebar */}
-          <aside className="space-y-8">
-            {broker && <BrokerCard broker={broker} />}
-            <BookingForm />
-            <FinancingCalculator />
-            <AdvancedSearch />
-            <SidePropertyList title="Propriedades Recentes" properties={recentProperties || []} />
-            <SidePropertyList title="Propriedades Relacionadas" properties={relatedProperties || []} />
+          {/* Barra Lateral */}
+          <aside className="space-y-8 lg:sticky lg:top-28 self-start">
+            {property.broker && <BrokerCard broker={property.broker} propertyId={property.id} />}
+            
+            <Tabs defaultValue="booking" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="booking">Agendar Visita</TabsTrigger>
+                <TabsTrigger value="proposal">Enviar Proposta</TabsTrigger>
+              </TabsList>
+              <TabsContent value="booking">
+                 <BookingForm propertyId={property.id} agentId={property.broker?.id} />
+              </TabsContent>
+              <TabsContent value="proposal">
+                <ProposalForm propertyId={property.id} />
+              </TabsContent>
+            </Tabs>
+
           </aside>
         </div>
       </main>
-      <PropertyFooter />
+      <AppFooter settings={settings} />
     </div>
   );
 };

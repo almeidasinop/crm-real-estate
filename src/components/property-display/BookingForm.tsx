@@ -1,52 +1,73 @@
-
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useState } from 'react';
-import { format } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea'; // Certifique-se de que este componente exista
+import { toast } from 'sonner';
 
 const BookingForm = () => {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  // Estado para controlar os dados do formulário
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    date: '',
+    message: '',
+  });
+
+  // Estado para controlar o status de envio
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Manipulador para atualizar o estado quando o usuário digita
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+  };
+
+  // Manipulador para o envio do formulário
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    console.log("Dados do formulário para envio:", formData);
+    // Aqui você integraria a lógica para enviar os dados para sua API
+
+    // Simulação de uma chamada de API
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    toast.success("Pedido de agendamento enviado com sucesso!");
+    setIsSubmitting(false);
+
+    // Limpa o formulário após o envio
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      date: '',
+      message: '',
+    });
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Agende uma Visita</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant={"outline"}
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !date && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PPP") : <span>Escolha uma data</span>}
+      <CardContent>
+        {/* O contêiner e o formulário que você solicitou */}
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">Agendar uma Visita</h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input id="name" type="text" placeholder="Nome" value={formData.name} onChange={handleInputChange} required />
+            <Input id="email" type="email" placeholder="Email" value={formData.email} onChange={handleInputChange} required />
+            <Input id="phone" type="tel" placeholder="Telefone" value={formData.phone} onChange={handleInputChange} required />
+            <Input id="date" type="date" value={formData.date} onChange={handleInputChange} required className="text-gray-500" />
+            <Textarea id="message" placeholder="Mensagem (opcional)" value={formData.message} onChange={handleInputChange} rows={3} />
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3" disabled={isSubmitting}>
+              {isSubmitting ? 'Enviando...' : 'Enviar Pedido'}
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-        {/* A simple time selector for demonstration */}
-        <select className="w-full p-2 border rounded-md">
-          <option>09:00</option>
-          <option>11:00</option>
-          <option>14:00</option>
-          <option>16:00</option>
-        </select>
-        <Button className="w-full">Confirmar Agendamento</Button>
+          </form>
+        </div>
       </CardContent>
     </Card>
   );

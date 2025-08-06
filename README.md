@@ -1,69 +1,86 @@
-# Welcome to your Lovable project
+# CRM Imobiliário
 
-## Project info
+Este é um aplicativo completo de CRM (Customer Relationship Management) para o setor imobiliário, construído com Vite, React, TypeScript e ShadCN UI. Ele oferece uma solução completa para imobiliárias gerenciarem propriedades, clientes, corretores e pipelines de vendas. A aplicação é integrada com o Firebase para armazenamento de dados em tempo real e autenticação.
 
-**URL**: https://lovable.dev/projects/721b7097-37cd-4dc4-8946-0910b3ea8bc7
+## ✨ Funcionalidades
 
-## How can I edit this code?
+- **Dashboard:** Uma visão geral das principais métricas, incluindo desempenho de vendas, leads ativos, listagens de imóveis e taxas de conversão. Também exibe atividades recentes e tarefas futuras.
+- **Gestão de Propriedades:** Um sistema completo para gerenciar os anúncios de imóveis. Você pode adicionar, editar e visualizar propriedades com informações detalhadas como preço, área, número de quartos e status (disponível, vendido, alugado).
+- **Gestão de Clientes:** Uma seção dedicada para gerenciar as informações dos clientes, incluindo seus detalhes de contato e preferências.
+- **Gestão de Corretores:** Um módulo para gerenciar os corretores de imóveis, acompanhar seu desempenho e atribuí-los a propriedades.
+- **Pipeline de Vendas:** Um pipeline visual para acompanhar o status dos leads e negócios, desde o contato inicial até o fechamento.
+- **Acompanhamento Financeiro:** Uma seção para monitorar o desempenho financeiro da agência, incluindo receitas, despesas e comissões.
+- **Estatísticas e Relatórios:** Estatísticas e relatórios detalhados sobre vendas, desempenho de corretores e fontes de leads.
+- **Integração com Firebase:** Sincronização de dados em tempo real e autenticação com a tecnologia do Firebase.
+- **Design Responsivo:** A aplicação é totalmente responsiva e funciona em todos os dispositivos.
 
-There are several ways of editing your application.
+## 🛠️ Tecnologias Utilizadas
 
-**Use Lovable**
+- **Framework:** [React](https://react.dev/)
+- **Build Tool:** [Vite](https://vitejs.dev/)
+- **Linguagem:** [TypeScript](https://www.typescriptlang.org/)
+- **UI:** [ShadCN UI](https://ui.shadcn.com/)
+- **Roteamento:** [React Router](https://reactrouter.com/)
+- **Gerenciamento de Estado:** [React Query](https://tanstack.com/query/latest)
+- **Estilização:** [Tailwind CSS](https://tailwindcss.com/)
+- **Backend:** [Firebase](https://firebase.google.com/)
+- **Gráficos:** [Recharts](https://recharts.org/)
+- **Formulários:** [React Hook Form](https://react-hook-form.com/)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/721b7097-37cd-4dc4-8946-0910b3ea8bc7) and start prompting.
+## 🚀 Como Começar
 
-Changes made via Lovable will be committed automatically to this repo.
+Para começar a usar o projeto, siga estes passos:
 
-**Use your preferred IDE**
+### Pré-requisitos
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- [Node.js](https://nodejs.org/en/) (v18 ou superior)
+- [npm](https://www.npmjs.com/) ou [yarn](https://yarnpkg.com/)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Instalação
 
-Follow these steps:
+1.  **Clone o repositório:**
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+    ```bash
+    git clone https://github.com/seu-usuario/nome-do-seu-repo.git
+    cd nome-do-seu-repo
+    ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2.  **Instale as dependências:**
 
-# Step 3: Install the necessary dependencies.
-npm i
+    ```bash
+    npm install
+    ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+3.  **Configure o Firebase:**
 
-**Edit a file directly in GitHub**
+    - Crie um novo projeto no [Console do Firebase](https://console.firebase.google.com/).
+    - Adicione um aplicativo da web ao seu projeto e copie a configuração do Firebase.
+    - Crie um arquivo `.env` na raiz do projeto e adicione sua configuração do Firebase:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+    ```
+    VITE_FIREBASE_API_KEY=sua-api-key
+    VITE_FIREBASE_AUTH_DOMAIN=seu-auth-domain
+    VITE_FIREBASE_PROJECT_ID=seu-project-id
+    VITE_FIREBASE_STORAGE_BUCKET=seu-storage-bucket
+    VITE_FIREBASE_MESSAGING_SENDER_ID=seu-messaging-sender-id
+    VITE_FIREBASE_APP_ID=seu-app-id
+    ```
 
-**Use GitHub Codespaces**
+4.  **Execute o servidor de desenvolvimento:**
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+    ```bash
+    npm run dev
+    ```
 
-## What technologies are used for this project?
+5.  **Abra seu navegador e acesse `http://localhost:5173`**
 
-This project is built with .
+## Scripts
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+-   `npm run dev`: Inicia o servidor de desenvolvimento.
+-   `npm run build`: Compila a aplicação para produção.
+-   `npm run lint`: Executa o linter no código.
+-   `npm run preview`: Pré-visualiza a build de produção.
 
-## How can I deploy this project?
+## 📄 Licença
 
-Simply open [Lovable](https://lovable.dev/projects/721b7097-37cd-4dc4-8946-0910b3ea8bc7) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+Este projeto está licenciado sob a Licença MIT.
